@@ -5,8 +5,8 @@ import authRoutes from "./routes/auth";
 import mfaRoutes from "./routes/mfa";
 import webauthnRoutes from "./routes/webauthn";
 import adminRoutes from "./routes/admin";
-import { layout } from "./views/layout";
-import { dashboardPage } from "./views/pages/dashboard";
+import { Layout } from "./views/layout";
+import { DashboardPage } from "./views/pages/dashboard";
 import { adminScript } from "./views/scripts/admin";
 import { getCredentialsByUserId } from "./services/webauthn.service";
 import { getDatabase } from "./db/database";
@@ -45,24 +45,28 @@ app.get("/", (c) => {
     return c.redirect("/dashboard");
   }
 
-  const content = `
-    <div class="hero">
-      <h2>Welcome to Auth Test App</h2>
-      <p>A testing environment for authentication flows including:</p>
-      <ul>
-        <li>Username/Password authentication</li>
-        <li>Passkeys (WebAuthn)</li>
-        <li>Two-Factor Authentication (TOTP & Email codes)</li>
-      </ul>
-      <p>Use this app to test password managers and browser extensions.</p>
-      <div class="hero-actions">
-        <a href="/login" class="btn btn-primary">Login</a>
-        <a href="/register" class="btn btn-secondary">Register</a>
+  return c.html(
+    <Layout title="Home">
+      <div class="hero">
+        <h2>Welcome to Auth Test App</h2>
+        <p>A testing environment for authentication flows including:</p>
+        <ul>
+          <li>Username/Password authentication</li>
+          <li>Passkeys (WebAuthn)</li>
+          <li>Two-Factor Authentication (TOTP & Email codes)</li>
+        </ul>
+        <p>Use this app to test password managers and browser extensions.</p>
+        <div class="hero-actions">
+          <a href="/login" class="btn btn-primary">
+            Login
+          </a>
+          <a href="/register" class="btn btn-secondary">
+            Register
+          </a>
+        </div>
       </div>
-    </div>
-  `;
-
-  return c.html(layout(content, { title: "Home" }));
+    </Layout>
+  );
 });
 
 // Login/Register redirects
@@ -87,7 +91,7 @@ app.get("/dashboard", (c) => {
   const message = c.req.query("message");
   const error = c.req.query("error");
 
-  return c.html(dashboardPage({ user, session, passkeys, message, error }));
+  return c.html(<DashboardPage user={user} session={session} passkeys={passkeys} message={message} error={error} />);
 });
 
 // Start server

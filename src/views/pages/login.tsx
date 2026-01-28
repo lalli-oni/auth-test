@@ -1,19 +1,18 @@
-import { layout } from "../layout";
+import type { FC } from "hono/jsx";
+import { Layout } from "../layout";
 
-export interface LoginPageOptions {
+export interface LoginPageProps {
   error?: string;
   success?: string;
 }
 
-export function loginPage(options: LoginPageOptions = {}): string {
-  const { error, success } = options;
-
-  const content = `
+export const LoginPage: FC<LoginPageProps> = ({ error, success }) => (
+  <Layout title="Login">
     <div class="auth-form-container">
       <h2>Login</h2>
 
-      ${error ? `<div class="alert alert-error">${error}</div>` : ""}
-      ${success ? `<div class="alert alert-success">${success}</div>` : ""}
+      {error && <div class="alert alert-error">{error}</div>}
+      {success && <div class="alert alert-success">{success}</div>}
 
       <form action="/auth/login" method="POST" class="auth-form">
         <div class="form-group">
@@ -39,7 +38,9 @@ export function loginPage(options: LoginPageOptions = {}): string {
           />
         </div>
 
-        <button type="submit" class="btn btn-primary">Login</button>
+        <button type="submit" class="btn btn-primary">
+          Login
+        </button>
       </form>
 
       <div class="auth-divider">
@@ -54,7 +55,5 @@ export function loginPage(options: LoginPageOptions = {}): string {
         Don't have an account? <a href="/register">Register</a>
       </p>
     </div>
-  `;
-
-  return layout(content, { title: "Login" });
-}
+  </Layout>
+);

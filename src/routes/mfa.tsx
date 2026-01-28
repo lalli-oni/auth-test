@@ -12,7 +12,7 @@ import {
 import { updateUser } from "../services/user.service";
 import { updateSessionMfaVerified } from "../services/session.service";
 import { logAuthEvent } from "../services/auth-event.service";
-import { mfaVerifyPage } from "../views/pages/mfa-verify";
+import { MfaVerifyPage } from "../views/pages/mfa-verify";
 
 const mfa = new Hono();
 
@@ -35,7 +35,7 @@ mfa.get("/verify", (c) => {
     return c.redirect("/dashboard");
   }
 
-  return c.html(mfaVerifyPage({ user }));
+  return c.html(<MfaVerifyPage user={user} />);
 });
 
 // TOTP Setup (returns QR code)
@@ -99,13 +99,13 @@ mfa.post("/totp/verify", async (c) => {
   const code = body.code as string;
 
   if (!code) {
-    return c.html(mfaVerifyPage({ user, error: "Code is required" }));
+    return c.html(<MfaVerifyPage user={user} error="Code is required" />);
   }
 
   const verified = verifyTotp(user.id, code);
   if (!verified) {
     logAuthEvent("mfa_totp_failed", user.id, { action: "verify" });
-    return c.html(mfaVerifyPage({ user, error: "Invalid code" }));
+    return c.html(<MfaVerifyPage user={user} error="Invalid code" />);
   }
 
   updateSessionMfaVerified(session.id, true);
@@ -175,10 +175,10 @@ mfa.post("/email/send", (c) => {
   // For testing, the code is visible in the admin panel
 
   return c.html(
-    mfaVerifyPage({
-      user,
-      error: `Code sent! (For testing, check the admin panel - code: ${emailCode.code})`,
-    })
+    <MfaVerifyPage
+      user={user}
+      error={`Code sent! (For testing, check the admin panel - code: ${emailCode.code})`}
+    />
   );
 });
 
@@ -195,13 +195,13 @@ mfa.post("/email/verify", async (c) => {
   const code = body.code as string;
 
   if (!code) {
-    return c.html(mfaVerifyPage({ user, error: "Code is required" }));
+    return c.html(<MfaVerifyPage user={user} error="Code is required" />);
   }
 
   const verified = verifyEmailCode(user.id, code);
   if (!verified) {
     logAuthEvent("mfa_email_failed", user.id);
-    return c.html(mfaVerifyPage({ user, error: "Invalid or expired code" }));
+    return c.html(<MfaVerifyPage user={user} error="Invalid or expired code" />);
   }
 
   updateSessionMfaVerified(session.id, true);

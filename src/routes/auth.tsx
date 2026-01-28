@@ -13,8 +13,8 @@ import {
   setSessionCookie,
   clearSessionCookie,
 } from "../middleware/session";
-import { loginPage } from "../views/pages/login";
-import { registerPage } from "../views/pages/register";
+import { LoginPage } from "../views/pages/login";
+import { RegisterPage } from "../views/pages/register";
 
 const auth = new Hono();
 
@@ -24,7 +24,7 @@ auth.get("/login", (c) => {
   if (session) {
     return c.redirect("/dashboard");
   }
-  return c.html(loginPage());
+  return c.html(<LoginPage />);
 });
 
 // Login handler
@@ -34,19 +34,19 @@ auth.post("/login", async (c) => {
   const password = body.password as string;
 
   if (!username || !password) {
-    return c.html(loginPage({ error: "Username and password are required" }));
+    return c.html(<LoginPage error="Username and password are required" />);
   }
 
   const user = getUserByUsername(username);
   if (!user) {
     logAuthEvent("login_failed", undefined, { username, reason: "user_not_found" });
-    return c.html(loginPage({ error: "Invalid username or password" }));
+    return c.html(<LoginPage error="Invalid username or password" />);
   }
 
   const validPassword = await verifyPassword(user, password);
   if (!validPassword) {
     logAuthEvent("login_failed", user.id, { reason: "invalid_password" });
-    return c.html(loginPage({ error: "Invalid username or password" }));
+    return c.html(<LoginPage error="Invalid username or password" />);
   }
 
   // Create session
@@ -74,7 +74,7 @@ auth.get("/register", (c) => {
   if (session) {
     return c.redirect("/dashboard");
   }
-  return c.html(registerPage());
+  return c.html(<RegisterPage />);
 });
 
 // Register handler
@@ -86,20 +86,20 @@ auth.post("/register", async (c) => {
   const confirmPassword = body.confirm_password as string;
 
   if (!username || !password) {
-    return c.html(registerPage({ error: "Username and password are required" }));
+    return c.html(<RegisterPage error="Username and password are required" />);
   }
 
   if (password !== confirmPassword) {
-    return c.html(registerPage({ error: "Passwords do not match" }));
+    return c.html(<RegisterPage error="Passwords do not match" />);
   }
 
   if (password.length < 6) {
-    return c.html(registerPage({ error: "Password must be at least 6 characters" }));
+    return c.html(<RegisterPage error="Password must be at least 6 characters" />);
   }
 
   const existingUser = getUserByUsername(username);
   if (existingUser) {
-    return c.html(registerPage({ error: "Username already taken" }));
+    return c.html(<RegisterPage error="Username already taken" />);
   }
 
   try {
@@ -118,11 +118,7 @@ auth.post("/register", async (c) => {
 
     return c.redirect("/dashboard");
   } catch (error) {
-    return c.html(
-      registerPage({
-        error: "Failed to create account. Please try again.",
-      })
-    );
+    return c.html(<RegisterPage error="Failed to create account. Please try again." />);
   }
 });
 
