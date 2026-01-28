@@ -1,4 +1,5 @@
-import type { User, Session } from "../services/user.service";
+import type { User } from "../services/user.service";
+import type { Session } from "../services/session.service";
 
 export interface LayoutOptions {
   title: string;

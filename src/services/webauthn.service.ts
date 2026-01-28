@@ -5,15 +5,13 @@ import {
   verifyAuthenticationResponse,
   type VerifiedRegistrationResponse,
   type VerifiedAuthenticationResponse,
+  type AuthenticatorTransportFuture,
+  type CredentialDeviceType,
+  type PublicKeyCredentialCreationOptionsJSON,
+  type PublicKeyCredentialRequestOptionsJSON,
+  type RegistrationResponseJSON,
+  type AuthenticationResponseJSON,
 } from "@simplewebauthn/server";
-import type {
-  AuthenticatorTransportFuture,
-  CredentialDeviceType,
-  PublicKeyCredentialCreationOptionsJSON,
-  PublicKeyCredentialRequestOptionsJSON,
-  RegistrationResponseJSON,
-  AuthenticationResponseJSON,
-} from "@simplewebauthn/server/script/deps";
 import { getDatabase } from "../db/database";
 import { getUserById, type User } from "./user.service";
 
