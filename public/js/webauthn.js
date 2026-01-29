@@ -34,7 +34,7 @@ const WebAuthnClient = {
       const optionsData = await optionsRes.json();
 
       if (!optionsData.success) {
-        alert('Failed to get registration options: ' + optionsData.error);
+        console.error('[WebAuthnClient] Failed to get registration options - Status:', optionsData.error);
         return;
       }
 
@@ -81,17 +81,17 @@ const WebAuthnClient = {
       const verifyData = await verifyRes.json();
 
       if (verifyData.success) {
-        alert('Passkey registered successfully!');
+        console.log('[WebAuthnClient] Passkey registered successfully');
         window.location.reload();
       } else {
-        alert('Failed to register passkey: ' + verifyData.error);
+        console.error('[WebAuthnClient] Failed to register passkey - Status:', verifyData.error);
       }
     } catch (error) {
-      console.error('Passkey registration error:', error);
+      console.error('[WebAuthnClient] Passkey registration error - Exception:', error);
       if (error.name === 'NotAllowedError') {
-        alert('Passkey registration was cancelled or not allowed.');
+        console.warn('[WebAuthnClient] Passkey registration cancelled or not allowed by user');
       } else {
-        alert('Error registering passkey: ' + error.message);
+        console.error('[WebAuthnClient] Error registering passkey - Exception:', error.message);
       }
     }
   },
@@ -107,7 +107,7 @@ const WebAuthnClient = {
       const optionsData = await optionsRes.json();
 
       if (!optionsData.success) {
-        alert('Failed to get authentication options: ' + optionsData.error);
+        console.error('[WebAuthnClient] Failed to get authentication options - Status:', optionsData.error);
         return;
       }
 
@@ -153,19 +153,21 @@ const WebAuthnClient = {
 
       if (verifyData.success) {
         if (verifyData.action === 'logged_in') {
+          console.log('[WebAuthnClient] Passkey authentication successful - action: logged_in');
           window.location.href = '/dashboard';
         } else if (verifyData.action === 'mfa_verified') {
+          console.log('[WebAuthnClient] Passkey authentication successful - action: mfa_verified');
           window.location.href = '/dashboard';
         }
       } else {
-        alert('Passkey authentication failed: ' + verifyData.error);
+        console.error('[WebAuthnClient] Passkey authentication failed - Status:', verifyData.error);
       }
     } catch (error) {
-      console.error('Passkey authentication error:', error);
+      console.error('[WebAuthnClient] Passkey authentication error - Exception:', error);
       if (error.name === 'NotAllowedError') {
-        alert('Passkey authentication was cancelled or not allowed.');
+        console.warn('[WebAuthnClient] Passkey authentication cancelled or not allowed by user');
       } else {
-        alert('Error authenticating with passkey: ' + error.message);
+        console.error('[WebAuthnClient] Error authenticating with passkey - Exception:', error.message);
       }
     }
   }
