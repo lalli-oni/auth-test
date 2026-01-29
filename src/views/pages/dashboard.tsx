@@ -80,10 +80,10 @@ const DashboardScript: FC = () => (
           if (data.success) {
             window.location.reload();
           } else {
-            alert('Verification failed: ' + data.error);
+            console.error('[DashboardScript] TOTP verification failed - Status:', data.error);
           }
         } catch (err) {
-          alert('Error: ' + err.message);
+          console.error('[DashboardScript] Error during TOTP verification - Exception:', err.message);
         }
       }
 
@@ -99,10 +99,10 @@ const DashboardScript: FC = () => (
           if (data.success) {
             window.location.reload();
           } else {
-            alert('Failed to remove passkey: ' + data.error);
+            console.error('[DashboardScript] Failed to remove passkey - Status:', data.error);
           }
         } catch (err) {
-          alert('Error: ' + err.message);
+          console.error('[DashboardScript] Error removing passkey - Exception:', err.message);
         }
       }
     `,
