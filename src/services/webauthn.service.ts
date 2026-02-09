@@ -34,54 +34,45 @@ export interface PasskeyCredential {
 export interface WebAuthnChallenge {
   id: number;
   user_id: number | null;
+  request_token: string;
   challenge: string;
   type: string;
   expires_at: string;
 }
 
 // Challenge management
+function generateRequestToken(): string {
+  return crypto.randomUUID();
+}
+
 function storeChallenge(
   challenge: string,
   type: "registration" | "authentication",
   userId?: number
-): void {
+): string {
   const db = getDatabase();
   const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString(); // 5 minutes
+  const requestToken = generateRequestToken();
 
-  // Clean up old challenges for this user/type
-  if (userId) {
-    db.run("DELETE FROM webauthn_challenges WHERE user_id = ? AND type = ?", [
-      userId,
-      type,
-    ]);
-  }
+  // Clean up expired challenges
+  db.run("DELETE FROM webauthn_challenges WHERE expires_at < datetime('now')");
 
   db.run(
-    "INSERT INTO webauthn_challenges (user_id, challenge, type, expires_at) VALUES (?, ?, ?, ?)",
-    [userId || null, challenge, type, expiresAt]
+    "INSERT INTO webauthn_challenges (user_id, request_token, challenge, type, expires_at) VALUES (?, ?, ?, ?, ?)",
+    [userId || null, requestToken, challenge, type, expiresAt]
   );
+
+  return requestToken;
 }
 
-function getAndDeleteChallenge(
-  type: "registration" | "authentication",
-  userId?: number
-): string | null {
+function getAndDeleteChallenge(requestToken: string): string | null {
   const db = getDatabase();
 
-  let challenge: WebAuthnChallenge | null;
-  if (userId) {
-    challenge = db
-      .query(
-        "SELECT * FROM webauthn_challenges WHERE user_id = ? AND type = ? AND expires_at > datetime('now')"
-      )
-      .get(userId, type) as WebAuthnChallenge | null;
-  } else {
-    challenge = db
-      .query(
-        "SELECT * FROM webauthn_challenges WHERE user_id IS NULL AND type = ? AND expires_at > datetime('now') ORDER BY id DESC LIMIT 1"
-      )
-      .get(type) as WebAuthnChallenge | null;
-  }
+  const challenge = db
+    .query(
+      "SELECT * FROM webauthn_challenges WHERE request_token = ? AND expires_at > datetime('now')"
+    )
+    .get(requestToken) as WebAuthnChallenge | null;
 
   if (!challenge) return null;
 
@@ -155,7 +146,7 @@ function updateCredentialCounter(credentialId: string, newCounter: number): void
 // Registration
 export async function generateRegistrationOptionsForUser(
   userId: number
-): Promise<PublicKeyCredentialCreationOptionsJSON | null> {
+): Promise<{ options: PublicKeyCredentialCreationOptionsJSON; requestToken: string } | null> {
   const user = getUserById(userId);
   if (!user) return null;
 
@@ -179,20 +170,21 @@ export async function generateRegistrationOptionsForUser(
     },
   });
 
-  storeChallenge(options.challenge, "registration", userId);
+  const requestToken = storeChallenge(options.challenge, "registration", userId);
 
-  return options;
+  return { options, requestToken };
 }
 
 export async function verifyRegistrationResponseForUser(
   userId: number,
   response: RegistrationResponseJSON,
+  requestToken: string,
   friendlyName?: string
 ): Promise<{ verified: boolean; error?: string }> {
   const user = getUserById(userId);
   if (!user) return { verified: false, error: "User not found" };
 
-  const expectedChallenge = getAndDeleteChallenge("registration", userId);
+  const expectedChallenge = getAndDeleteChallenge(requestToken);
   if (!expectedChallenge) {
     return { verified: false, error: "Challenge not found or expired" };
   }
@@ -236,7 +228,7 @@ export async function verifyRegistrationResponseForUser(
 // Authentication
 export async function generateAuthenticationOptionsForUser(
   userId?: number
-): Promise<PublicKeyCredentialRequestOptionsJSON> {
+): Promise<{ options: PublicKeyCredentialRequestOptionsJSON; requestToken: string }> {
   let allowCredentials: { id: string; transports?: AuthenticatorTransportFuture[] }[] = [];
 
   if (userId) {
@@ -255,13 +247,14 @@ export async function generateAuthenticationOptionsForUser(
     userVerification: "preferred",
   });
 
-  storeChallenge(options.challenge, "authentication", userId);
+  const requestToken = storeChallenge(options.challenge, "authentication", userId);
 
-  return options;
+  return { options, requestToken };
 }
 
 export async function verifyAuthenticationResponseForUser(
   response: AuthenticationResponseJSON,
+  requestToken: string,
   userId?: number
 ): Promise<{
   verified: boolean;
@@ -279,10 +272,7 @@ export async function verifyAuthenticationResponseForUser(
     return { verified: false, error: "Credential does not belong to user" };
   }
 
-  const expectedChallenge = getAndDeleteChallenge(
-    "authentication",
-    userId || credential.user_id
-  );
+  const expectedChallenge = getAndDeleteChallenge(requestToken);
   if (!expectedChallenge) {
     return { verified: false, error: "Challenge not found or expired" };
   }

@@ -39,6 +39,7 @@ const WebAuthnClient = {
       }
 
       const options = optionsData.options;
+      const requestToken = optionsData.requestToken;
 
       // Convert base64url strings to ArrayBuffers
       options.challenge = this.base64urlToBuffer(options.challenge);
@@ -76,7 +77,7 @@ const WebAuthnClient = {
       const verifyRes = await fetch('/webauthn/register/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ response, friendlyName })
+        body: JSON.stringify({ response, requestToken, friendlyName })
       });
       const verifyData = await verifyRes.json();
 
@@ -112,6 +113,7 @@ const WebAuthnClient = {
       }
 
       const options = optionsData.options;
+      const requestToken = optionsData.requestToken;
 
       // Convert base64url strings to ArrayBuffers
       options.challenge = this.base64urlToBuffer(options.challenge);
@@ -125,8 +127,11 @@ const WebAuthnClient = {
 
       // Call WebAuthn API
       const credential = await navigator.credentials.get({
-        publicKey: options
+        publicKey: options,
+        mediation: 'conditional',
       });
+
+      console.log('web app credential received', credential);
 
       // Prepare response for server
       const response = {
@@ -147,10 +152,11 @@ const WebAuthnClient = {
       const verifyRes = await fetch('/webauthn/auth/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ response })
+        body: JSON.stringify({ response, requestToken })
       });
       const verifyData = await verifyRes.json();
 
+      console.log('passkey verification response', verifyData);
       if (verifyData.success) {
         if (verifyData.action === 'logged_in') {
           console.log('[WebAuthnClient] Passkey authentication successful - action: logged_in');
