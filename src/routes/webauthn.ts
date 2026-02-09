@@ -22,12 +22,12 @@ webauthn.post("/register/options", async (c) => {
     return c.json({ success: false, error: "Not authenticated" }, 401);
   }
 
-  const options = await generateRegistrationOptionsForUser(user.id);
-  if (!options) {
+  const result = await generateRegistrationOptionsForUser(user.id);
+  if (!result) {
     return c.json({ success: false, error: "Failed to generate options" });
   }
 
-  return c.json({ success: true, options });
+  return c.json({ success: true, options: result.options, requestToken: result.requestToken });
 });
 
 // Registration: Verify response
@@ -40,15 +40,20 @@ webauthn.post("/register/verify", async (c) => {
   }
 
   const body = await c.req.json();
-  const { response, friendlyName } = body;
+  const { response, requestToken, friendlyName } = body;
 
   if (!response) {
     return c.json({ success: false, error: "Response is required" });
   }
 
+  if (!requestToken) {
+    return c.json({ success: false, error: "Request token is required" });
+  }
+
   const result = await verifyRegistrationResponseForUser(
     user.id,
     response,
+    requestToken,
     friendlyName
   );
 
@@ -70,24 +75,29 @@ webauthn.post("/auth/options", async (c) => {
   const user = c.get("user");
 
   // If user is logged in, limit to their credentials
-  const options = await generateAuthenticationOptionsForUser(user?.id);
+  const result = await generateAuthenticationOptionsForUser(user?.id);
 
-  return c.json({ success: true, options });
+  return c.json({ success: true, options: result.options, requestToken: result.requestToken });
 });
 
 // Authentication: Verify response
 webauthn.post("/auth/verify", async (c) => {
   const body = await c.req.json();
-  const { response } = body;
+  const { response, requestToken } = body;
 
   if (!response) {
     return c.json({ success: false, error: "Response is required" });
+  }
+
+  if (!requestToken) {
+    return c.json({ success: false, error: "Request token is required" });
   }
 
   const session = c.get("session");
 
   const result = await verifyAuthenticationResponseForUser(
     response,
+    requestToken,
     session?.user_id
   );
 

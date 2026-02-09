@@ -46,6 +46,7 @@ export function initializeSchema(db: Database): void {
     CREATE TABLE IF NOT EXISTS webauthn_challenges (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER,
+      request_token TEXT NOT NULL UNIQUE,
       challenge TEXT NOT NULL,
       type TEXT NOT NULL,
       expires_at TEXT NOT NULL,
