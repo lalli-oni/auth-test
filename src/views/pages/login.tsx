@@ -14,7 +14,7 @@ export const LoginPage: FC<LoginPageProps> = ({ error, success }) => (
       {error && <div class="alert alert-error">{error}</div>}
       {success && <div class="alert alert-success">{success}</div>}
 
-      <form action="/auth/login" method="POST" class="auth-form">
+      <form action="/auth/login" method="post" class="auth-form">
         <div class="form-group">
           <label for="username">Username</label>
           <input
