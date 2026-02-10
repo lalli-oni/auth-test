@@ -1,14 +1,14 @@
-import { Hono } from "hono";
-import { serveStatic } from "hono/bun";
-import { sessionMiddleware } from "./middleware/session";
-import authRoutes from "./routes/auth";
-import mfaRoutes from "./routes/mfa";
-import webauthnRoutes from "./routes/webauthn";
-import adminRoutes from "./routes/admin";
-import { Layout } from "./views/layout";
-import { DashboardPage } from "./views/pages/dashboard";
-import { getCredentialsByUserId } from "./services/webauthn.service";
-import { getDatabase } from "./db/database";
+import { Hono } from 'hono';
+import { serveStatic } from 'hono/bun';
+import { getDatabase } from './db/database';
+import { sessionMiddleware } from './middleware/session';
+import adminRoutes from './routes/admin';
+import authRoutes from './routes/auth';
+import mfaRoutes from './routes/mfa';
+import webauthnRoutes from './routes/webauthn';
+import { getCredentialsByUserId } from './services/webauthn.service';
+import { Layout } from './views/layout';
+import { DashboardPage } from './views/pages/dashboard';
 
 const app = new Hono();
 
@@ -16,26 +16,26 @@ const app = new Hono();
 getDatabase();
 
 // Static files
-app.use("/css/*", serveStatic({ root: "./public" }));
+app.use('/css/*', serveStatic({ root: './public' }));
 
-app.use("/js/*", serveStatic({ root: "./public" }));
+app.use('/js/*', serveStatic({ root: './public' }));
 
 // Session middleware for all routes
-app.use("*", sessionMiddleware);
+app.use('*', sessionMiddleware);
 
 // Mount routes
-app.route("/auth", authRoutes);
-app.route("/mfa", mfaRoutes);
-app.route("/webauthn", webauthnRoutes);
-app.route("/admin", adminRoutes);
+app.route('/auth', authRoutes);
+app.route('/mfa', mfaRoutes);
+app.route('/webauthn', webauthnRoutes);
+app.route('/admin', adminRoutes);
 
 // Home page
-app.get("/", (c) => {
-  const session = c.get("session");
-  const user = c.get("user");
+app.get('/', (c) => {
+  const session = c.get('session');
+  const user = c.get('user');
 
   if (session && user) {
-    return c.redirect("/dashboard");
+    return c.redirect('/dashboard');
   }
 
   return c.html(
@@ -58,33 +58,41 @@ app.get("/", (c) => {
           </a>
         </div>
       </div>
-    </Layout>
+    </Layout>,
   );
 });
 
 // Login/Register redirects
-app.get("/login", (c) => c.redirect("/auth/login"));
-app.get("/register", (c) => c.redirect("/auth/register"));
+app.get('/login', (c) => c.redirect('/auth/login'));
+app.get('/register', (c) => c.redirect('/auth/register'));
 
 // Dashboard
-app.get("/dashboard", (c) => {
-  const session = c.get("session");
-  const user = c.get("user");
+app.get('/dashboard', (c) => {
+  const session = c.get('session');
+  const user = c.get('user');
 
   if (!session || !user) {
-    return c.redirect("/login");
+    return c.redirect('/login');
   }
 
   // Check if MFA is required but not verified
   if ((user.totp_enabled || user.email_mfa_enabled) && !session.mfa_verified) {
-    return c.redirect("/mfa/verify");
+    return c.redirect('/mfa/verify');
   }
 
   const passkeys = getCredentialsByUserId(user.id);
-  const message = c.req.query("message");
-  const error = c.req.query("error");
+  const message = c.req.query('message');
+  const error = c.req.query('error');
 
-  return c.html(<DashboardPage user={user} session={session} passkeys={passkeys} message={message} error={error} />);
+  return c.html(
+    <DashboardPage
+      user={user}
+      session={session}
+      passkeys={passkeys}
+      message={message}
+      error={error}
+    />,
+  );
 });
 
 // Start server

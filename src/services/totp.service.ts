@@ -1,7 +1,7 @@
-const { authenticator } = require("otplib");
-import * as QRCode from "qrcode";
-import { getDatabase } from "../db/database";
-import { getUserById, updateUser, type User } from "./user.service";
+const { authenticator } = require('otplib');
+
+import * as QRCode from 'qrcode';
+import { getUserById, updateUser } from './user.service';
 
 export interface TotpSetupResult {
   secret: string;
@@ -13,16 +13,14 @@ export function generateTotpSecret(): string {
   return authenticator.generateSecret();
 }
 
-export async function setupTotp(userId: number): Promise<TotpSetupResult | null> {
+export async function setupTotp(
+  userId: number,
+): Promise<TotpSetupResult | null> {
   const user = getUserById(userId);
   if (!user) return null;
 
   const secret = generateTotpSecret();
-  const otpauthUrl = authenticator.keyuri(
-    user.username,
-    "AuthTestApp",
-    secret
-  );
+  const otpauthUrl = authenticator.keyuri(user.username, 'AuthTestApp', secret);
 
   const qrCodeDataUrl = await QRCode.toDataURL(otpauthUrl);
 
@@ -63,13 +61,16 @@ export function verifyTotp(userId: number, token: string): boolean {
   });
 }
 
-export function getCurrentTotpCode(userId: number): { code: string; remainingSeconds: number } | null {
+export function getCurrentTotpCode(
+  userId: number,
+): { code: string; remainingSeconds: number } | null {
   const user = getUserById(userId);
   if (!user || !user.totp_secret) return null;
 
   const code = authenticator.generate(user.totp_secret);
   const timeStep = authenticator.options.step || 30;
-  const remainingSeconds = timeStep - (Math.floor(Date.now() / 1000) % timeStep);
+  const remainingSeconds =
+    timeStep - (Math.floor(Date.now() / 1000) % timeStep);
 
   return { code, remainingSeconds };
 }

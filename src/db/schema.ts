@@ -1,4 +1,4 @@
-import { Database } from "bun:sqlite";
+import type { Database } from 'bun:sqlite';
 
 export function initializeSchema(db: Database): void {
   db.run(`
@@ -78,9 +78,19 @@ export function initializeSchema(db: Database): void {
   `);
 
   // Create indexes for better query performance
-  db.run(`CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions(user_id)`);
-  db.run(`CREATE INDEX IF NOT EXISTS idx_sessions_expires_at ON sessions(expires_at)`);
-  db.run(`CREATE INDEX IF NOT EXISTS idx_passkey_credentials_user_id ON passkey_credentials(user_id)`);
-  db.run(`CREATE INDEX IF NOT EXISTS idx_email_codes_user_id ON email_codes(user_id)`);
-  db.run(`CREATE INDEX IF NOT EXISTS idx_auth_events_user_id ON auth_events(user_id)`);
+  db.run(
+    `CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions(user_id)`,
+  );
+  db.run(
+    `CREATE INDEX IF NOT EXISTS idx_sessions_expires_at ON sessions(expires_at)`,
+  );
+  db.run(
+    `CREATE INDEX IF NOT EXISTS idx_passkey_credentials_user_id ON passkey_credentials(user_id)`,
+  );
+  db.run(
+    `CREATE INDEX IF NOT EXISTS idx_email_codes_user_id ON email_codes(user_id)`,
+  );
+  db.run(
+    `CREATE INDEX IF NOT EXISTS idx_auth_events_user_id ON auth_events(user_id)`,
+  );
 }

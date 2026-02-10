@@ -1,36 +1,39 @@
-import { Hono } from "hono";
+import { Hono } from 'hono';
+import { resetDatabase } from '../db/database';
 import {
-  getAllUsers,
-  getUserById,
-  createUser,
-  updateUser,
-  updatePassword,
-  deleteUser,
-} from "../services/user.service";
-import {
-  getAllSessions,
-  getSessionsByUserId,
-  deleteSession,
-  deleteAllSessions,
-  deleteSessionsByUserId,
-} from "../services/session.service";
-import { getCurrentTotpCode, disableTotp } from "../services/totp.service";
+  getAllAuthEvents,
+  getAuthEventsByUserId,
+} from '../services/auth-event.service';
 import {
   createEmailCode,
   getActiveEmailCodes,
   getAllEmailCodes,
-} from "../services/email-code.service";
+} from '../services/email-code.service';
 import {
-  getCredentialsByUserId,
+  deleteAllSessions,
+  deleteSession,
+  deleteSessionsByUserId,
+  getAllSessions,
+  getSessionsByUserId,
+} from '../services/session.service';
+import { disableTotp, getCurrentTotpCode } from '../services/totp.service';
+import {
+  createUser,
+  deleteUser,
+  getAllUsers,
+  getUserById,
+  updatePassword,
+  updateUser,
+} from '../services/user.service';
+import {
   deleteCredential,
-} from "../services/webauthn.service";
-import { getAllAuthEvents, getAuthEventsByUserId } from "../services/auth-event.service";
-import { resetDatabase } from "../db/database";
+  getCredentialsByUserId,
+} from '../services/webauthn.service';
 
 const admin = new Hono();
 
 // List all users
-admin.get("/users", (c) => {
+admin.get('/users', (c) => {
   const users = getAllUsers();
   return c.json({
     success: true,
@@ -46,12 +49,15 @@ admin.get("/users", (c) => {
 });
 
 // Create user
-admin.post("/users", async (c) => {
+admin.post('/users', async (c) => {
   const body = await c.req.json();
   const { username, password, email } = body;
 
   if (!username || !password) {
-    return c.json({ success: false, error: "Username and password are required" }, 400);
+    return c.json(
+      { success: false, error: 'Username and password are required' },
+      400,
+    );
   }
 
   try {
@@ -66,20 +72,23 @@ admin.post("/users", async (c) => {
       },
     });
   } catch (error) {
-    return c.json({
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to create user",
-    }, 400);
+    return c.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to create user',
+      },
+      400,
+    );
   }
 });
 
 // Get user details
-admin.get("/users/:id", (c) => {
-  const id = parseInt(c.req.param("id"));
+admin.get('/users/:id', (c) => {
+  const id = parseInt(c.req.param('id'), 10);
   const user = getUserById(id);
 
   if (!user) {
-    return c.json({ success: false, error: "User not found" }, 404);
+    return c.json({ success: false, error: 'User not found' }, 404);
   }
 
   const sessions = getSessionsByUserId(id);
@@ -129,14 +138,14 @@ admin.get("/users/:id", (c) => {
 });
 
 // Update user
-admin.patch("/users/:id", async (c) => {
-  const id = parseInt(c.req.param("id"));
+admin.patch('/users/:id', async (c) => {
+  const id = parseInt(c.req.param('id'), 10);
   const body = await c.req.json();
   const { username, email, totpEnabled, emailMfaEnabled } = body;
 
   const user = getUserById(id);
   if (!user) {
-    return c.json({ success: false, error: "User not found" }, 404);
+    return c.json({ success: false, error: 'User not found' }, 404);
   }
 
   const updated = updateUser(id, {
@@ -149,40 +158,40 @@ admin.patch("/users/:id", async (c) => {
   return c.json({
     success: true,
     user: {
-      id: updated!.id,
-      username: updated!.username,
-      email: updated!.email,
-      totpEnabled: !!updated!.totp_enabled,
-      emailMfaEnabled: !!updated!.email_mfa_enabled,
+      id: updated?.id,
+      username: updated?.username,
+      email: updated?.email,
+      totpEnabled: !!updated?.totp_enabled,
+      emailMfaEnabled: !!updated?.email_mfa_enabled,
     },
   });
 });
 
 // Delete user
-admin.delete("/users/:id", (c) => {
-  const id = parseInt(c.req.param("id"));
+admin.delete('/users/:id', (c) => {
+  const id = parseInt(c.req.param('id'), 10);
   const deleted = deleteUser(id);
 
   if (!deleted) {
-    return c.json({ success: false, error: "User not found" }, 404);
+    return c.json({ success: false, error: 'User not found' }, 404);
   }
 
   return c.json({ success: true });
 });
 
 // Reset password
-admin.post("/users/:id/reset-password", async (c) => {
-  const id = parseInt(c.req.param("id"));
+admin.post('/users/:id/reset-password', async (c) => {
+  const id = parseInt(c.req.param('id'), 10);
   const body = await c.req.json();
   const { password } = body;
 
   if (!password) {
-    return c.json({ success: false, error: "Password is required" }, 400);
+    return c.json({ success: false, error: 'Password is required' }, 400);
   }
 
   const user = getUserById(id);
   if (!user) {
-    return c.json({ success: false, error: "User not found" }, 404);
+    return c.json({ success: false, error: 'User not found' }, 404);
   }
 
   await updatePassword(id, password);
@@ -191,21 +200,21 @@ admin.post("/users/:id/reset-password", async (c) => {
 });
 
 // Get current TOTP code
-admin.get("/users/:id/totp/current", (c) => {
-  const id = parseInt(c.req.param("id"));
+admin.get('/users/:id/totp/current', (c) => {
+  const id = parseInt(c.req.param('id'), 10);
   const user = getUserById(id);
 
   if (!user) {
-    return c.json({ success: false, error: "User not found" }, 404);
+    return c.json({ success: false, error: 'User not found' }, 404);
   }
 
   if (!user.totp_secret) {
-    return c.json({ success: false, error: "TOTP not configured" }, 400);
+    return c.json({ success: false, error: 'TOTP not configured' }, 400);
   }
 
   const result = getCurrentTotpCode(id);
   if (!result) {
-    return c.json({ success: false, error: "Failed to generate code" }, 500);
+    return c.json({ success: false, error: 'Failed to generate code' }, 500);
   }
 
   return c.json({
@@ -217,12 +226,12 @@ admin.get("/users/:id/totp/current", (c) => {
 });
 
 // Disable TOTP
-admin.delete("/users/:id/totp", (c) => {
-  const id = parseInt(c.req.param("id"));
+admin.delete('/users/:id/totp', (c) => {
+  const id = parseInt(c.req.param('id'), 10);
   const user = getUserById(id);
 
   if (!user) {
-    return c.json({ success: false, error: "User not found" }, 404);
+    return c.json({ success: false, error: 'User not found' }, 404);
   }
 
   disableTotp(id);
@@ -231,12 +240,12 @@ admin.delete("/users/:id/totp", (c) => {
 });
 
 // Generate email code
-admin.post("/users/:id/email-codes", (c) => {
-  const id = parseInt(c.req.param("id"));
+admin.post('/users/:id/email-codes', (c) => {
+  const id = parseInt(c.req.param('id'), 10);
   const user = getUserById(id);
 
   if (!user) {
-    return c.json({ success: false, error: "User not found" }, 404);
+    return c.json({ success: false, error: 'User not found' }, 404);
   }
 
   const code = createEmailCode(id);
@@ -252,12 +261,12 @@ admin.post("/users/:id/email-codes", (c) => {
 });
 
 // List active email codes
-admin.get("/users/:id/email-codes", (c) => {
-  const id = parseInt(c.req.param("id"));
+admin.get('/users/:id/email-codes', (c) => {
+  const id = parseInt(c.req.param('id'), 10);
   const user = getUserById(id);
 
   if (!user) {
-    return c.json({ success: false, error: "User not found" }, 404);
+    return c.json({ success: false, error: 'User not found' }, 404);
   }
 
   const codes = getActiveEmailCodes(id);
@@ -274,12 +283,12 @@ admin.get("/users/:id/email-codes", (c) => {
 });
 
 // List passkeys
-admin.get("/users/:id/passkeys", (c) => {
-  const id = parseInt(c.req.param("id"));
+admin.get('/users/:id/passkeys', (c) => {
+  const id = parseInt(c.req.param('id'), 10);
   const user = getUserById(id);
 
   if (!user) {
-    return c.json({ success: false, error: "User not found" }, 404);
+    return c.json({ success: false, error: 'User not found' }, 404);
   }
 
   const passkeys = getCredentialsByUserId(id);
@@ -298,25 +307,25 @@ admin.get("/users/:id/passkeys", (c) => {
 });
 
 // Delete passkey
-admin.delete("/users/:id/passkeys/:credentialId", (c) => {
-  const id = parseInt(c.req.param("id"));
-  const credentialId = c.req.param("credentialId");
+admin.delete('/users/:id/passkeys/:credentialId', (c) => {
+  const id = parseInt(c.req.param('id'), 10);
+  const credentialId = c.req.param('credentialId');
 
   const user = getUserById(id);
   if (!user) {
-    return c.json({ success: false, error: "User not found" }, 404);
+    return c.json({ success: false, error: 'User not found' }, 404);
   }
 
   const deleted = deleteCredential(credentialId);
   if (!deleted) {
-    return c.json({ success: false, error: "Passkey not found" }, 404);
+    return c.json({ success: false, error: 'Passkey not found' }, 404);
   }
 
   return c.json({ success: true });
 });
 
 // List all sessions
-admin.get("/sessions", (c) => {
+admin.get('/sessions', (c) => {
   const sessions = getAllSessions();
 
   return c.json({
@@ -334,33 +343,33 @@ admin.get("/sessions", (c) => {
 });
 
 // Delete session
-admin.delete("/sessions/:id", (c) => {
-  const id = c.req.param("id");
+admin.delete('/sessions/:id', (c) => {
+  const id = c.req.param('id');
   const deleted = deleteSession(id);
 
   if (!deleted) {
-    return c.json({ success: false, error: "Session not found" }, 404);
+    return c.json({ success: false, error: 'Session not found' }, 404);
   }
 
   return c.json({ success: true });
 });
 
 // Delete all sessions
-admin.delete("/sessions", (c) => {
+admin.delete('/sessions', (c) => {
   const count = deleteAllSessions();
   return c.json({ success: true, deletedCount: count });
 });
 
 // Delete sessions for a user
-admin.delete("/users/:id/sessions", (c) => {
-  const id = parseInt(c.req.param("id"));
+admin.delete('/users/:id/sessions', (c) => {
+  const id = parseInt(c.req.param('id'), 10);
   const count = deleteSessionsByUserId(id);
   return c.json({ success: true, deletedCount: count });
 });
 
 // Get auth events
-admin.get("/events", (c) => {
-  const limit = parseInt(c.req.query("limit") || "100");
+admin.get('/events', (c) => {
+  const limit = parseInt(c.req.query('limit') || '100', 10);
   const events = getAllAuthEvents(limit);
 
   return c.json({
@@ -376,9 +385,9 @@ admin.get("/events", (c) => {
 });
 
 // Reset database
-admin.post("/reset", (c) => {
+admin.post('/reset', (c) => {
   resetDatabase();
-  return c.json({ success: true, message: "Database reset successfully" });
+  return c.json({ success: true, message: 'Database reset successfully' });
 });
 
 export default admin;
