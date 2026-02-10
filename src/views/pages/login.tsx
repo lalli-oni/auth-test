@@ -1,5 +1,5 @@
-import type { FC } from "hono/jsx";
-import { Layout } from "../layout";
+import type { FC } from 'hono/jsx';
+import { Layout } from '../layout';
 
 export interface LoginPageProps {
   error?: string;
@@ -48,17 +48,45 @@ export const LoginPage: FC<LoginPageProps> = ({ error, success }) => (
       </div>
 
       <div class="combo-btn">
-        <button onclick="WebAuthnClient.loginWithPasskey('conditional')" class="btn btn-secondary combo-btn-main">
+        <button
+          type="button"
+          onclick="WebAuthnClient.loginWithPasskey('conditional')"
+          class="btn btn-secondary combo-btn-main"
+        >
           Login with Passkey
         </button>
-        <button class="btn btn-secondary combo-btn-toggle" onclick="this.parentElement.classList.toggle('open')">
+        <button
+          type="button"
+          class="btn btn-secondary combo-btn-toggle"
+          onclick="this.parentElement.classList.toggle('open')"
+        >
           &#9662;
         </button>
         <div class="combo-btn-dropdown">
-          <button onclick="WebAuthnClient.loginWithPasskey(undefined)">undefined</button>
-          <button onclick="WebAuthnClient.loginWithPasskey('optional')">Optional</button>
-          <button onclick="WebAuthnClient.loginWithPasskey('required')">Required</button>
-          <button onclick="WebAuthnClient.loginWithPasskey('silent')">Silent</button>
+          <button
+            type="button"
+            onclick="WebAuthnClient.loginWithPasskey(undefined)"
+          >
+            undefined
+          </button>
+          <button
+            type="button"
+            onclick="WebAuthnClient.loginWithPasskey('optional')"
+          >
+            Optional
+          </button>
+          <button
+            type="button"
+            onclick="WebAuthnClient.loginWithPasskey('required')"
+          >
+            Required
+          </button>
+          <button
+            type="button"
+            onclick="WebAuthnClient.loginWithPasskey('silent')"
+          >
+            Silent
+          </button>
         </div>
       </div>
 
