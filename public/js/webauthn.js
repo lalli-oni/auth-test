@@ -98,7 +98,7 @@ const WebAuthnClient = {
   },
 
   // Login with passkey
-  async loginWithPasskey() {
+  async loginWithPasskey(mediation) {
     try {
       // Get authentication options from server
       const optionsRes = await fetch('/webauthn/auth/options', {
@@ -128,7 +128,7 @@ const WebAuthnClient = {
       // Call WebAuthn API
       const credential = await navigator.credentials.get({
         publicKey: options,
-        mediation: 'conditional',
+        mediation,
       });
 
       console.log('web app credential received', credential);
@@ -181,3 +181,12 @@ const WebAuthnClient = {
 
 // Make it globally available
 window.WebAuthnClient = WebAuthnClient;
+
+// Close combo button dropdown when clicking outside
+document.addEventListener('click', (e) => {
+  document.querySelectorAll('.combo-btn.open').forEach((btn) => {
+    if (!btn.contains(e.target)) {
+      btn.classList.remove('open');
+    }
+  });
+});
