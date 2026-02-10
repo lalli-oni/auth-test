@@ -9,6 +9,10 @@ bun install          # Install dependencies
 bun run dev          # Run with hot reload (development)
 bun run start        # Run without hot reload
 bun test             # Run tests (no tests exist yet)
+bun run lint         # Check linting & formatting (Biome)
+bun run lint:fix     # Auto-fix lint & formatting issues
+bun run format       # Check formatting only
+bun run format:fix   # Auto-fix formatting only
 ```
 
 ## Tech Stack
