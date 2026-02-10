@@ -3,7 +3,7 @@
 const WebAuthnClient = {
   // Convert base64url to ArrayBuffer
   base64urlToBuffer(base64url) {
-    const padding = '='.repeat((4 - base64url.length % 4) % 4);
+    const padding = '='.repeat((4 - (base64url.length % 4)) % 4);
     const base64 = base64url.replace(/-/g, '+').replace(/_/g, '/') + padding;
     const rawData = atob(base64);
     const buffer = new Uint8Array(rawData.length);
@@ -20,7 +20,10 @@ const WebAuthnClient = {
     for (let i = 0; i < bytes.length; i++) {
       binary += String.fromCharCode(bytes[i]);
     }
-    return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+    return btoa(binary)
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=/g, '');
   },
 
   // Register a new passkey
@@ -29,12 +32,15 @@ const WebAuthnClient = {
       // Get registration options from server
       const optionsRes = await fetch('/webauthn/register/options', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       });
       const optionsData = await optionsRes.json();
 
       if (!optionsData.success) {
-        console.error('[WebAuthnClient] Failed to get registration options - Status:', optionsData.error);
+        console.error(
+          '[WebAuthnClient] Failed to get registration options - Status:',
+          optionsData.error,
+        );
         return;
       }
 
@@ -46,19 +52,22 @@ const WebAuthnClient = {
       options.user.id = this.base64urlToBuffer(options.user.id);
 
       if (options.excludeCredentials) {
-        options.excludeCredentials = options.excludeCredentials.map(cred => ({
+        options.excludeCredentials = options.excludeCredentials.map((cred) => ({
           ...cred,
-          id: this.base64urlToBuffer(cred.id)
+          id: this.base64urlToBuffer(cred.id),
         }));
       }
 
       // Call WebAuthn API
       const credential = await navigator.credentials.create({
-        publicKey: options
+        publicKey: options,
       });
 
       // Ask for a friendly name
-      const friendlyName = prompt('Enter a name for this passkey (e.g., "MacBook Pro", "iPhone"):') || 'My Passkey';
+      const friendlyName =
+        prompt(
+          'Enter a name for this passkey (e.g., "MacBook Pro", "iPhone"):',
+        ) || 'My Passkey';
 
       // Prepare response for server
       const response = {
@@ -66,18 +75,24 @@ const WebAuthnClient = {
         rawId: this.bufferToBase64url(credential.rawId),
         type: credential.type,
         response: {
-          clientDataJSON: this.bufferToBase64url(credential.response.clientDataJSON),
-          attestationObject: this.bufferToBase64url(credential.response.attestationObject),
-          transports: credential.response.getTransports ? credential.response.getTransports() : []
+          clientDataJSON: this.bufferToBase64url(
+            credential.response.clientDataJSON,
+          ),
+          attestationObject: this.bufferToBase64url(
+            credential.response.attestationObject,
+          ),
+          transports: credential.response.getTransports
+            ? credential.response.getTransports()
+            : [],
         },
-        clientExtensionResults: credential.getClientExtensionResults()
+        clientExtensionResults: credential.getClientExtensionResults(),
       };
 
       // Verify with server
       const verifyRes = await fetch('/webauthn/register/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ response, requestToken, friendlyName })
+        body: JSON.stringify({ response, requestToken, friendlyName }),
       });
       const verifyData = await verifyRes.json();
 
@@ -85,14 +100,25 @@ const WebAuthnClient = {
         console.log('[WebAuthnClient] Passkey registered successfully');
         window.location.reload();
       } else {
-        console.error('[WebAuthnClient] Failed to register passkey - Status:', verifyData.error);
+        console.error(
+          '[WebAuthnClient] Failed to register passkey - Status:',
+          verifyData.error,
+        );
       }
     } catch (error) {
-      console.error('[WebAuthnClient] Passkey registration error - Exception:', error);
+      console.error(
+        '[WebAuthnClient] Passkey registration error - Exception:',
+        error,
+      );
       if (error.name === 'NotAllowedError') {
-        console.warn('[WebAuthnClient] Passkey registration cancelled or not allowed by user');
+        console.warn(
+          '[WebAuthnClient] Passkey registration cancelled or not allowed by user',
+        );
       } else {
-        console.error('[WebAuthnClient] Error registering passkey - Exception:', error.message);
+        console.error(
+          '[WebAuthnClient] Error registering passkey - Exception:',
+          error.message,
+        );
       }
     }
   },
@@ -103,12 +129,15 @@ const WebAuthnClient = {
       // Get authentication options from server
       const optionsRes = await fetch('/webauthn/auth/options', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       });
       const optionsData = await optionsRes.json();
 
       if (!optionsData.success) {
-        console.error('[WebAuthnClient] Failed to get authentication options - Status:', optionsData.error);
+        console.error(
+          '[WebAuthnClient] Failed to get authentication options - Status:',
+          optionsData.error,
+        );
         return;
       }
 
@@ -119,9 +148,9 @@ const WebAuthnClient = {
       options.challenge = this.base64urlToBuffer(options.challenge);
 
       if (options.allowCredentials) {
-        options.allowCredentials = options.allowCredentials.map(cred => ({
+        options.allowCredentials = options.allowCredentials.map((cred) => ({
           ...cred,
-          id: this.base64urlToBuffer(cred.id)
+          id: this.base64urlToBuffer(cred.id),
         }));
       }
 
@@ -139,44 +168,64 @@ const WebAuthnClient = {
         rawId: this.bufferToBase64url(credential.rawId),
         type: credential.type,
         response: {
-          clientDataJSON: this.bufferToBase64url(credential.response.clientDataJSON),
-          authenticatorData: this.bufferToBase64url(credential.response.authenticatorData),
+          clientDataJSON: this.bufferToBase64url(
+            credential.response.clientDataJSON,
+          ),
+          authenticatorData: this.bufferToBase64url(
+            credential.response.authenticatorData,
+          ),
           signature: this.bufferToBase64url(credential.response.signature),
-          userHandle: credential.response.userHandle ?
-            this.bufferToBase64url(credential.response.userHandle) : null
+          userHandle: credential.response.userHandle
+            ? this.bufferToBase64url(credential.response.userHandle)
+            : null,
         },
-        clientExtensionResults: credential.getClientExtensionResults()
+        clientExtensionResults: credential.getClientExtensionResults(),
       };
 
       // Verify with server
       const verifyRes = await fetch('/webauthn/auth/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ response, requestToken })
+        body: JSON.stringify({ response, requestToken }),
       });
       const verifyData = await verifyRes.json();
 
       console.log('passkey verification response', verifyData);
       if (verifyData.success) {
         if (verifyData.action === 'logged_in') {
-          console.log('[WebAuthnClient] Passkey authentication successful - action: logged_in');
+          console.log(
+            '[WebAuthnClient] Passkey authentication successful - action: logged_in',
+          );
           window.location.href = '/dashboard';
         } else if (verifyData.action === 'mfa_verified') {
-          console.log('[WebAuthnClient] Passkey authentication successful - action: mfa_verified');
+          console.log(
+            '[WebAuthnClient] Passkey authentication successful - action: mfa_verified',
+          );
           window.location.href = '/dashboard';
         }
       } else {
-        console.error('[WebAuthnClient] Passkey authentication failed - Status:', verifyData.error);
+        console.error(
+          '[WebAuthnClient] Passkey authentication failed - Status:',
+          verifyData.error,
+        );
       }
     } catch (error) {
-      console.error('[WebAuthnClient] Passkey authentication error - Exception:', error);
+      console.error(
+        '[WebAuthnClient] Passkey authentication error - Exception:',
+        error,
+      );
       if (error.name === 'NotAllowedError') {
-        console.warn('[WebAuthnClient] Passkey authentication cancelled or not allowed by user');
+        console.warn(
+          '[WebAuthnClient] Passkey authentication cancelled or not allowed by user',
+        );
       } else {
-        console.error('[WebAuthnClient] Error authenticating with passkey - Exception:', error.message);
+        console.error(
+          '[WebAuthnClient] Error authenticating with passkey - Exception:',
+          error.message,
+        );
       }
     }
-  }
+  },
 };
 
 // Make it globally available

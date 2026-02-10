@@ -1,6 +1,6 @@
-import type { FC, PropsWithChildren } from "hono/jsx";
-import type { User } from "../services/user.service";
-import type { Session } from "../services/session.service";
+import type { FC, PropsWithChildren } from 'hono/jsx';
+import type { Session } from '../services/session.service';
+import type { User } from '../services/user.service';
 
 export interface LayoutProps {
   title: string;
@@ -17,7 +17,11 @@ const AdminSidebar: FC = () => (
     <div class="admin-section">
       <h3>Users</h3>
       <div id="admin-users-list" class="admin-list"></div>
-      <button onclick="AdminPanel.showCreateUserForm()" class="btn btn-small">
+      <button
+        type="button"
+        onclick="AdminPanel.showCreateUserForm()"
+        class="btn btn-small"
+      >
         + Create User
       </button>
     </div>
@@ -25,17 +29,29 @@ const AdminSidebar: FC = () => (
     <div class="admin-section">
       <h3>Sessions</h3>
       <div id="admin-sessions-list" class="admin-list"></div>
-      <button onclick="AdminPanel.killAllSessions()" class="btn btn-small btn-danger">
+      <button
+        type="button"
+        onclick="AdminPanel.killAllSessions()"
+        class="btn btn-small btn-danger"
+      >
         Kill All Sessions
       </button>
     </div>
 
     <div class="admin-section">
       <h3>Quick Actions</h3>
-      <button onclick="AdminPanel.resetDatabase()" class="btn btn-small btn-danger">
+      <button
+        type="button"
+        onclick="AdminPanel.resetDatabase()"
+        class="btn btn-small btn-danger"
+      >
         Reset Database
       </button>
-      <button onclick="AdminPanel.refreshAll()" class="btn btn-small">
+      <button
+        type="button"
+        onclick="AdminPanel.refreshAll()"
+        class="btn btn-small"
+      >
         Refresh All
       </button>
     </div>
@@ -76,7 +92,11 @@ export const Layout: FC<PropsWithChildren<LayoutProps>> = ({
                 <>
                   <span>Welcome, {user.username}</span>
                   <a href="/dashboard">Dashboard</a>
-                  <form action="/auth/logout" method="POST" style={{ display: "inline" }}>
+                  <form
+                    action="/auth/logout"
+                    method="POST"
+                    style={{ display: 'inline' }}
+                  >
                     <button type="submit" class="btn-link">
                       Logout
                     </button>
