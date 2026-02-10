@@ -47,9 +47,20 @@ export const LoginPage: FC<LoginPageProps> = ({ error, success }) => (
         <span>or</span>
       </div>
 
-      <button onclick="WebAuthnClient.loginWithPasskey()" class="btn btn-secondary btn-full">
-        Login with Passkey
-      </button>
+      <div class="combo-btn">
+        <button onclick="WebAuthnClient.loginWithPasskey('conditional')" class="btn btn-secondary combo-btn-main">
+          Login with Passkey
+        </button>
+        <button class="btn btn-secondary combo-btn-toggle" onclick="this.parentElement.classList.toggle('open')">
+          &#9662;
+        </button>
+        <div class="combo-btn-dropdown">
+          <button onclick="WebAuthnClient.loginWithPasskey(undefined)">undefined</button>
+          <button onclick="WebAuthnClient.loginWithPasskey('optional')">Optional</button>
+          <button onclick="WebAuthnClient.loginWithPasskey('required')">Required</button>
+          <button onclick="WebAuthnClient.loginWithPasskey('silent')">Silent</button>
+        </div>
+      </div>
 
       <p class="auth-link">
         Don't have an account? <a href="/register">Register</a>
