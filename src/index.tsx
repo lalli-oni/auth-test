@@ -7,7 +7,6 @@ import webauthnRoutes from "./routes/webauthn";
 import adminRoutes from "./routes/admin";
 import { Layout } from "./views/layout";
 import { DashboardPage } from "./views/pages/dashboard";
-import { adminScript } from "./views/scripts/admin";
 import { getCredentialsByUserId } from "./services/webauthn.service";
 import { getDatabase } from "./db/database";
 
@@ -19,12 +18,6 @@ getDatabase();
 // Static files
 app.use("/css/*", serveStatic({ root: "./public" }));
 
-// Serve admin script from views
-app.get("/js/admin.js", (c) => {
-  return c.text(adminScript(), 200, { "Content-Type": "application/javascript" });
-});
-
-// Serve other JS files from public
 app.use("/js/*", serveStatic({ root: "./public" }));
 
 // Session middleware for all routes
