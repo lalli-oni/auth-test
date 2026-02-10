@@ -1,111 +1,67 @@
----
-description: Use Bun instead of Node.js, npm, pnpm, or vite.
-globs: "*.ts, *.tsx, *.html, *.css, *.js, *.jsx, package.json"
-alwaysApply: false
----
+# CLAUDE.md
 
-Default to using Bun instead of Node.js.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-- Use `bun <file>` instead of `node <file>` or `ts-node <file>`
-- Use `bun test` instead of `jest` or `vitest`
-- Use `bun build <file.html|file.ts|file.css>` instead of `webpack` or `esbuild`
-- Use `bun install` instead of `npm install` or `yarn install` or `pnpm install`
-- Use `bun run <script>` instead of `npm run <script>` or `yarn run <script>` or `pnpm run <script>`
-- Use `bunx <package> <command>` instead of `npx <package> <command>`
-- Bun automatically loads .env, so don't use dotenv.
+## Commands
 
-## APIs
-
-- `Bun.serve()` supports WebSockets, HTTPS, and routes. Don't use `express`.
-- `bun:sqlite` for SQLite. Don't use `better-sqlite3`.
-- `Bun.redis` for Redis. Don't use `ioredis`.
-- `Bun.sql` for Postgres. Don't use `pg` or `postgres.js`.
-- `WebSocket` is built-in. Don't use `ws`.
-- Prefer `Bun.file` over `node:fs`'s readFile/writeFile
-- Bun.$`ls` instead of execa.
-
-## Testing
-
-Use `bun test` to run tests.
-
-```ts#index.test.ts
-import { test, expect } from "bun:test";
-
-test("hello world", () => {
-  expect(1).toBe(1);
-});
+```bash
+bun install          # Install dependencies
+bun run dev          # Run with hot reload (development)
+bun run start        # Run without hot reload
+bun test             # Run tests (no tests exist yet)
 ```
 
-## Frontend
+## Tech Stack
 
-Use HTML imports with `Bun.serve()`. Don't use `vite`. HTML imports fully support React, CSS, Tailwind.
+- **Runtime**: Bun (not Node.js)
+- **Framework**: Hono (not Express)
+- **Database**: SQLite via `bun:sqlite` (not better-sqlite3)
+- **Views**: Hono JSX (server-rendered TSX)
+- **WebAuthn**: @simplewebauthn/server
+- **TOTP**: otplib
 
-Server:
+## Architecture
 
-```ts#index.ts
-import index from "./index.html"
-
-Bun.serve({
-  routes: {
-    "/": index,
-    "/api/users/:id": {
-      GET: (req) => {
-        return new Response(JSON.stringify({ id: req.params.id }));
-      },
-    },
-  },
-  // optional websocket support
-  websocket: {
-    open: (ws) => {
-      ws.send("Hello, world!");
-    },
-    message: (ws, message) => {
-      ws.send(message);
-    },
-    close: (ws) => {
-      // handle close
-    }
-  },
-  development: {
-    hmr: true,
-    console: true,
-  }
-})
+```
+src/
+├── index.tsx           # Entry point, Hono app setup, route mounting
+├── db/
+│   ├── database.ts     # SQLite connection singleton
+│   └── schema.ts       # Table definitions (users, sessions, passkey_credentials, etc.)
+├── middleware/
+│   └── session.ts      # Session middleware, auth helpers (requireAuth, requireMfaVerified)
+├── routes/
+│   ├── auth.tsx        # Login/register/logout routes
+│   ├── mfa.tsx         # TOTP and email MFA routes
+│   ├── webauthn.ts     # Passkey registration/authentication API
+│   └── admin.ts        # Admin API (no auth - testing only)
+├── services/           # Business logic layer
+│   ├── user.service.ts
+│   ├── session.service.ts
+│   ├── webauthn.service.ts
+│   ├── totp.service.ts
+│   └── email-code.service.ts
+├── views/
+│   ├── layout.tsx      # Base HTML layout with admin sidebar
+│   ├── pages/          # Page components (dashboard, login, register, mfa-verify)
+│   └── scripts/        # Client-side JS rendered as strings
+public/
+├── css/styles.css      # Styles
+└── js/                 # Client-side JavaScript (webauthn.js, dashboard.js, admin.js)
 ```
 
-HTML files can import .tsx, .jsx or .js files directly and Bun's bundler will transpile & bundle automatically. `<link>` tags can point to stylesheets and Bun's CSS bundler will bundle.
+## Key Patterns
 
-```html#index.html
-<html>
-  <body>
-    <h1>Hello, world!</h1>
-    <script type="module" src="./frontend.tsx"></script>
-  </body>
-</html>
-```
+**Session Context**: Middleware sets `session` and `user` on Hono context. Access via `c.get("session")` and `c.get("user")`.
 
-With the following `frontend.tsx`:
+**MFA Flow**: After password login, if user has TOTP/email MFA enabled, session.mfa_verified is false. User must complete `/mfa/verify` before accessing protected routes.
 
-```tsx#frontend.tsx
-import React from "react";
-import { createRoot } from "react-dom/client";
+**Views**: Use Hono's JSX (`import type { FC } from "hono/jsx"`). Forms should use lowercase `method="post"` (not `"POST"`).
 
-// import .css files directly and it works
-import './index.css';
+**Client Scripts**: Place in `public/js/`. Load via `<script src="/js/filename.js">`. Avoid `dangerouslySetInnerHTML`.
 
-const root = createRoot(document.body);
+## Bun-Specific
 
-export default function Frontend() {
-  return <h1>Hello, world!</h1>;
-}
-
-root.render(<Frontend />);
-```
-
-Then, run index.ts
-
-```sh
-bun --hot ./index.ts
-```
-
-For more information, read the Bun API docs in `node_modules/bun-types/docs/**.mdx`.
+- Bun auto-loads `.env` - don't use dotenv
+- Use `Bun.file()` over `node:fs` readFile/writeFile
+- Use `bun:sqlite` for database operations
