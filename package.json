@@ -5,9 +5,14 @@
   "private": true,
   "scripts": {
     "dev": "bun run --hot src/index.tsx",
-    "start": "bun run src/index.tsx"
+    "start": "bun run src/index.tsx",
+    "lint": "biome check src/ public/",
+    "lint:fix": "biome check --write src/ public/",
+    "format": "biome format src/ public/",
+    "format:fix": "biome format --write src/ public/"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.3.14",
     "@types/bun": "latest",
     "@types/qrcode": "^1.5.6"
   },

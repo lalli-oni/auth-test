@@ -1,8 +1,8 @@
-import type { FC } from "hono/jsx";
-import { Layout } from "../layout";
-import type { User } from "../../services/user.service";
-import type { Session } from "../../services/session.service";
-import type { PasskeyCredential } from "../../services/webauthn.service";
+import type { FC } from 'hono/jsx';
+import type { Session } from '../../services/session.service';
+import type { User } from '../../services/user.service';
+import type { PasskeyCredential } from '../../services/webauthn.service';
+import { Layout } from '../layout';
 
 export interface DashboardPageProps {
   user: User;
@@ -15,13 +15,17 @@ export interface DashboardPageProps {
 const PasskeyItem: FC<{ passkey: PasskeyCredential }> = ({ passkey }) => (
   <div class="passkey-item">
     <div class="passkey-info">
-      <strong>{passkey.friendly_name || "Unnamed Passkey"}</strong>
+      <strong>{passkey.friendly_name || 'Unnamed Passkey'}</strong>
       <span class="passkey-meta">
         Created: {new Date(passkey.created_at).toLocaleString()}
-        {passkey.backed_up && " \u2022 Backed up"}
+        {passkey.backed_up && ' \u2022 Backed up'}
       </span>
     </div>
-    <button onclick={`deletePasskey('${passkey.id}')`} class="btn btn-danger btn-small">
+    <button
+      type="button"
+      onclick={`deletePasskey('${passkey.id}')`}
+      class="btn btn-danger btn-small"
+    >
       Remove
     </button>
   </div>
@@ -133,7 +137,7 @@ export const DashboardPage: FC<DashboardPageProps> = ({
           </div>
           <div class="info-item">
             <label>Email</label>
-            <span>{user.email || "Not set"}</span>
+            <span>{user.email || 'Not set'}</span>
           </div>
           <div class="info-item">
             <label>Account Created</label>
@@ -148,11 +152,13 @@ export const DashboardPage: FC<DashboardPageProps> = ({
         <div class="security-option">
           <div class="security-option-info">
             <h4>TOTP Authenticator</h4>
-            <p>Use an authenticator app like Google Authenticator or 1Password.</p>
+            <p>
+              Use an authenticator app like Google Authenticator or 1Password.
+            </p>
             <span
-              class={`status-badge ${user.totp_enabled ? "status-enabled" : "status-disabled"}`}
+              class={`status-badge ${user.totp_enabled ? 'status-enabled' : 'status-disabled'}`}
             >
-              {user.totp_enabled ? "Enabled" : "Disabled"}
+              {user.totp_enabled ? 'Enabled' : 'Disabled'}
             </span>
           </div>
           <div class="security-option-actions">
@@ -163,7 +169,11 @@ export const DashboardPage: FC<DashboardPageProps> = ({
                 </button>
               </form>
             ) : (
-              <button onclick="showTotpSetup()" class="btn btn-primary btn-small">
+              <button
+                type="button"
+                onclick="showTotpSetup()"
+                class="btn btn-primary btn-small"
+              >
                 Enable
               </button>
             )}
@@ -175,9 +185,9 @@ export const DashboardPage: FC<DashboardPageProps> = ({
             <h4>Email Codes</h4>
             <p>Receive verification codes via email.</p>
             <span
-              class={`status-badge ${user.email_mfa_enabled ? "status-enabled" : "status-disabled"}`}
+              class={`status-badge ${user.email_mfa_enabled ? 'status-enabled' : 'status-disabled'}`}
             >
-              {user.email_mfa_enabled ? "Enabled" : "Disabled"}
+              {user.email_mfa_enabled ? 'Enabled' : 'Disabled'}
             </span>
           </div>
           <div class="security-option-actions">
@@ -212,7 +222,11 @@ export const DashboardPage: FC<DashboardPageProps> = ({
           <p class="no-items">No passkeys registered.</p>
         )}
 
-        <button onclick="WebAuthnClient.registerPasskey()" class="btn btn-primary">
+        <button
+          type="button"
+          onclick="WebAuthnClient.registerPasskey()"
+          class="btn btn-primary"
+        >
           Register New Passkey
         </button>
       </div>
@@ -226,7 +240,7 @@ export const DashboardPage: FC<DashboardPageProps> = ({
           </div>
           <div class="info-item">
             <label>MFA Verified</label>
-            <span>{session.mfa_verified ? "Yes" : "No"}</span>
+            <span>{session.mfa_verified ? 'Yes' : 'No'}</span>
           </div>
           <div class="info-item">
             <label>Expires</label>

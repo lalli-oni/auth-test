@@ -1,12 +1,12 @@
-import { Database } from "bun:sqlite";
-import { initializeSchema } from "./schema";
+import { Database } from 'bun:sqlite';
+import { initializeSchema } from './schema';
 
 let db: Database | null = null;
 
 export function getDatabase(): Database {
   if (!db) {
-    db = new Database("auth-test.db");
-    db.run("PRAGMA foreign_keys = ON");
+    db = new Database('auth-test.db');
+    db.run('PRAGMA foreign_keys = ON');
     initializeSchema(db);
   }
   return db;
@@ -19,9 +19,9 @@ export function resetDatabase(): void {
   }
 
   // Delete the database file
-  const fs = require("fs");
-  if (fs.existsSync("auth-test.db")) {
-    fs.unlinkSync("auth-test.db");
+  const fs = require('node:fs');
+  if (fs.existsSync('auth-test.db')) {
+    fs.unlinkSync('auth-test.db');
   }
 
   // Reinitialize

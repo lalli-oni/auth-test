@@ -1,6 +1,6 @@
-import type { FC } from "hono/jsx";
-import { Layout } from "../layout";
-import type { User } from "../../services/user.service";
+import type { FC } from 'hono/jsx';
+import type { User } from '../../services/user.service';
+import { Layout } from '../layout';
 
 export interface MfaVerifyPageProps {
   user: User;
@@ -61,7 +61,12 @@ export const MfaVerifyPage: FC<MfaVerifyPageProps> = ({ user, error }) => {
                 Send Code
               </button>
             </form>
-            <form action="/mfa/email/verify" method="POST" class="auth-form" style={{ marginTop: "1rem" }}>
+            <form
+              action="/mfa/email/verify"
+              method="POST"
+              class="auth-form"
+              style={{ marginTop: '1rem' }}
+            >
               <div class="form-group">
                 <label for="email_code">Email Code</label>
                 <input
