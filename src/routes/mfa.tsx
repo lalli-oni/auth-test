@@ -13,6 +13,7 @@ import {
 } from '../services/totp.service';
 import { updateUser } from '../services/user.service';
 import { MfaVerifyPage } from '../views/pages/mfa-verify';
+import { TotpVerifyPage } from '../views/pages/totp-verify';
 
 const mfa = new Hono();
 
@@ -76,7 +77,7 @@ mfa.post('/totp/enable', async (c) => {
     return c.json({ success: false, error: 'Code is required' });
   }
 
-  const verified = verifyTotpAndEnable(user.id, code);
+  const verified = await verifyTotpAndEnable(user.id, code);
   if (!verified) {
     logAuthEvent('mfa_totp_failed', user.id, { action: 'enable' });
     return c.json({ success: false, error: 'Invalid code' });
@@ -102,7 +103,7 @@ mfa.post('/totp/verify', async (c) => {
     return c.html(<MfaVerifyPage user={user} error="Code is required" />);
   }
 
-  const verified = verifyTotp(user.id, code);
+  const verified = await verifyTotp(user.id, code);
   if (!verified) {
     logAuthEvent('mfa_totp_failed', user.id, { action: 'verify' });
     return c.html(<MfaVerifyPage user={user} error="Invalid code" />);
@@ -212,19 +213,23 @@ mfa.post('/email/verify', async (c) => {
   return c.redirect('/dashboard');
 });
 
-// Static 2FA verify page
-mfa.get('/static-verify', (c) => {
+// TOTP setup+verify page (for users without TOTP yet)
+mfa.get('/totp-verify', async (c) => {
   const session = c.get('session');
   const user = c.get('user');
   if (!session || !user) return c.redirect('/login');
   if (user.totp_enabled || user.email_mfa_enabled)
     return c.redirect('/mfa/verify');
   if (session.mfa_verified) return c.redirect('/dashboard');
-  return c.html(<MfaVerifyPage user={user} showStaticCode={true} />);
+
+  const setup = await setupTotp(user.id);
+  if (!setup) return c.redirect('/login');
+
+  return c.html(<TotpVerifyPage {...setup} />);
 });
 
-// Static 2FA verify handler
-mfa.post('/static-verify', async (c) => {
+// TOTP setup+verify handler
+mfa.post('/totp-verify', async (c) => {
   const session = c.get('session');
   const user = c.get('user');
   if (!session || !user) return c.redirect('/login');
@@ -236,28 +241,24 @@ mfa.post('/static-verify', async (c) => {
   const code = body.code as string;
 
   if (!code) {
-    return c.html(
-      <MfaVerifyPage
-        user={user}
-        showStaticCode={true}
-        error="Code is required"
-      />,
-    );
+    const setup = await setupTotp(user.id);
+    if (!setup) return c.redirect('/login');
+    return c.html(<TotpVerifyPage {...setup} error="Code is required" />);
   }
 
-  if (code !== '1234') {
-    logAuthEvent('mfa_static_failed', user.id, { reason: 'invalid_code' });
+  const verified = await verifyTotpAndEnable(user.id, code);
+  if (!verified) {
+    logAuthEvent('mfa_totp_failed', user.id, { action: 'login_setup' });
+    const setup = await setupTotp(user.id);
+    if (!setup) return c.redirect('/login');
     return c.html(
-      <MfaVerifyPage
-        user={user}
-        showStaticCode={true}
-        error="Invalid 2FA code"
-      />,
+      <TotpVerifyPage {...setup} error="Invalid code — please try again" />,
     );
   }
 
   updateSessionMfaVerified(session.id, true);
-  logAuthEvent('mfa_static_verified', user.id);
+  logAuthEvent('mfa_totp_enabled', user.id);
+  logAuthEvent('mfa_totp_verified', user.id);
   return c.redirect('/dashboard');
 });
 

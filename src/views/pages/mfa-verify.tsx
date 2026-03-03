@@ -5,14 +5,9 @@ import { Layout } from '../layout';
 export interface MfaVerifyPageProps {
   user: User;
   error?: string;
-  showStaticCode?: boolean;
 }
 
-export const MfaVerifyPage: FC<MfaVerifyPageProps> = ({
-  user,
-  error,
-  showStaticCode,
-}) => {
+export const MfaVerifyPage: FC<MfaVerifyPageProps> = ({ user, error }) => {
   const showTotp = user.totp_enabled;
   const showEmail = user.email_mfa_enabled;
 
@@ -84,37 +79,6 @@ export const MfaVerifyPage: FC<MfaVerifyPageProps> = ({
                   maxlength={6}
                   required
                   placeholder="000000"
-                />
-              </div>
-              <button type="submit" class="btn btn-primary">
-                Verify
-              </button>
-            </form>
-          </div>
-        )}
-
-        {(showTotp || showEmail) && showStaticCode && (
-          <div class="auth-divider">
-            <span>or</span>
-          </div>
-        )}
-
-        {showStaticCode && (
-          <div class="mfa-option">
-            <h3>2FA Code</h3>
-            <p>Enter your 2FA code to complete login.</p>
-            <form action="/mfa/static-verify" method="post" class="auth-form">
-              <div class="form-group">
-                <label for="static_code">2FA Code</label>
-                <input
-                  type="text"
-                  id="static_code"
-                  name="code"
-                  inputmode="numeric"
-                  autocomplete="one-time-code"
-                  required
-                  autofocus
-                  placeholder="Enter code"
                 />
               </div>
               <button type="submit" class="btn btn-primary">

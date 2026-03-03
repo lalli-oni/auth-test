@@ -1,5 +1,4 @@
-const { authenticator } = require('otplib');
-
+import { generate, generateSecret, generateURI, verify } from 'otplib';
 import * as QRCode from 'qrcode';
 import { getUserById, updateUser } from './user.service';
 
@@ -10,7 +9,7 @@ export interface TotpSetupResult {
 }
 
 export function generateTotpSecret(): string {
-  return authenticator.generateSecret();
+  return generateSecret();
 }
 
 export async function setupTotp(
@@ -19,8 +18,12 @@ export async function setupTotp(
   const user = getUserById(userId);
   if (!user) return null;
 
-  const secret = generateTotpSecret();
-  const otpauthUrl = authenticator.keyuri(user.username, 'AuthTestApp', secret);
+  const secret = user.totp_secret || generateTotpSecret();
+  const otpauthUrl = generateURI({
+    issuer: 'AuthTestApp',
+    account: user.username,
+    secret,
+  });
 
   const qrCodeDataUrl = await QRCode.toDataURL(otpauthUrl);
 
@@ -34,16 +37,15 @@ export async function setupTotp(
   };
 }
 
-export function verifyTotpAndEnable(userId: number, token: string): boolean {
+export async function verifyTotpAndEnable(
+  userId: number,
+  token: string,
+): Promise<boolean> {
   const user = getUserById(userId);
   if (!user || !user.totp_secret) return false;
 
-  const isValid = authenticator.verify({
-    token,
-    secret: user.totp_secret,
-  });
-
-  if (isValid) {
+  const result = await verify({ token, secret: user.totp_secret });
+  if (result?.valid) {
     updateUser(userId, { totp_enabled: true });
     return true;
   }
@@ -51,24 +53,25 @@ export function verifyTotpAndEnable(userId: number, token: string): boolean {
   return false;
 }
 
-export function verifyTotp(userId: number, token: string): boolean {
+export async function verifyTotp(
+  userId: number,
+  token: string,
+): Promise<boolean> {
   const user = getUserById(userId);
   if (!user || !user.totp_enabled || !user.totp_secret) return false;
 
-  return authenticator.verify({
-    token,
-    secret: user.totp_secret,
-  });
+  const result = await verify({ token, secret: user.totp_secret });
+  return !!result?.valid;
 }
 
-export function getCurrentTotpCode(
+export async function getCurrentTotpCode(
   userId: number,
-): { code: string; remainingSeconds: number } | null {
+): Promise<{ code: string; remainingSeconds: number } | null> {
   const user = getUserById(userId);
   if (!user || !user.totp_secret) return null;
 
-  const code = authenticator.generate(user.totp_secret);
-  const timeStep = authenticator.options.step || 30;
+  const code = await generate({ secret: user.totp_secret });
+  const timeStep = 30;
   const remainingSeconds =
     timeStep - (Math.floor(Date.now() / 1000) % timeStep);
 

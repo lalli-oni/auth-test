@@ -47,8 +47,8 @@ auth.post('/login', async (c) => {
     return c.html(<LoginPage error="Invalid username or password" />);
   }
 
-  const wantsStatic2fa =
-    (body.require_static_2fa as string) === '1' &&
+  const wantsTotp2fa =
+    (body.require_2fa as string) === '1' &&
     !(user.totp_enabled || user.email_mfa_enabled);
 
   // Create session
@@ -56,7 +56,7 @@ auth.post('/login', async (c) => {
     userId: user.id,
     userAgent: c.req.header('User-Agent'),
     ipAddress: c.req.header('X-Forwarded-For') || c.req.header('X-Real-IP'),
-    mfaVerified: wantsStatic2fa
+    mfaVerified: wantsTotp2fa
       ? false
       : !(user.totp_enabled || user.email_mfa_enabled),
   });
@@ -69,8 +69,8 @@ auth.post('/login', async (c) => {
     return c.redirect('/mfa/verify');
   }
 
-  if (wantsStatic2fa) {
-    return c.redirect('/mfa/static-verify');
+  if (wantsTotp2fa) {
+    return c.redirect('/mfa/totp-verify');
   }
 
   return c.redirect('/dashboard');

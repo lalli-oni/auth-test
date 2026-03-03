@@ -52,18 +52,13 @@ export const LoginPage: FC<LoginPageProps> = ({ error, success }) => (
           <div class="combo-btn-dropdown">
             <button
               type="button"
-              onclick="document.getElementById('require_static_2fa').value='1'; this.closest('form').submit();"
+              onclick="document.getElementById('require_2fa').value='1'; this.closest('form').submit();"
             >
               Login with 2FA
             </button>
           </div>
         </div>
-        <input
-          type="hidden"
-          id="require_static_2fa"
-          name="require_static_2fa"
-          value=""
-        />
+        <input type="hidden" id="require_2fa" name="require_2fa" value="" />
       </form>
 
       <div class="auth-divider">
