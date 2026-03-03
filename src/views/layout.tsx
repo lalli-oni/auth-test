@@ -114,6 +114,7 @@ export const Layout: FC<PropsWithChildren<LayoutProps>> = ({
         </main>
         {showAdminPanel && <AdminSidebar />}
       </div>
+      <script src="/js/ui.js"></script>
       <script src="/js/webauthn.js"></script>
       <script src="/js/admin.js"></script>
     </body>
