@@ -217,6 +217,8 @@ mfa.get('/static-verify', (c) => {
   const session = c.get('session');
   const user = c.get('user');
   if (!session || !user) return c.redirect('/login');
+  if (user.totp_enabled || user.email_mfa_enabled)
+    return c.redirect('/mfa/verify');
   if (session.mfa_verified) return c.redirect('/dashboard');
   return c.html(<MfaVerifyPage user={user} showStaticCode={true} />);
 });
@@ -226,6 +228,9 @@ mfa.post('/static-verify', async (c) => {
   const session = c.get('session');
   const user = c.get('user');
   if (!session || !user) return c.redirect('/login');
+  if (user.totp_enabled || user.email_mfa_enabled)
+    return c.redirect('/mfa/verify');
+  if (session.mfa_verified) return c.redirect('/dashboard');
 
   const body = await c.req.parseBody();
   const code = body.code as string;

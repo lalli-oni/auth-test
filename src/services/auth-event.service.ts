@@ -34,15 +34,20 @@ export function logAuthEvent(
   eventType: AuthEventType,
   userId?: number,
   details?: Record<string, unknown>,
-): AuthEvent {
-  const db = getDatabase();
+): AuthEvent | null {
+  try {
+    const db = getDatabase();
 
-  const result = db.run(
-    'INSERT INTO auth_events (user_id, event_type, details) VALUES (?, ?, ?)',
-    [userId || null, eventType, details ? JSON.stringify(details) : null],
-  );
+    const result = db.run(
+      'INSERT INTO auth_events (user_id, event_type, details) VALUES (?, ?, ?)',
+      [userId || null, eventType, details ? JSON.stringify(details) : null],
+    );
 
-  return getAuthEventById(Number(result.lastInsertRowid))!;
+    return getAuthEventById(Number(result.lastInsertRowid));
+  } catch (err) {
+    console.error('[logAuthEvent] Failed to write auth event:', eventType, err);
+    return null;
+  }
 }
 
 export function getAuthEventById(id: number): AuthEvent | null {
