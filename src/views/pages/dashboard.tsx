@@ -31,89 +31,6 @@ const PasskeyItem: FC<{ passkey: PasskeyCredential }> = ({ passkey }) => (
   </div>
 );
 
-const DashboardScript: FC = () => (
-  <script
-    dangerouslySetInnerHTML={{
-      __html: `
-      async function showTotpSetup() {
-        const modal = document.getElementById('totp-setup-modal');
-        const content = document.getElementById('totp-setup-content');
-        modal.classList.remove('hidden');
-
-        try {
-          const response = await fetch('/mfa/totp/setup', { method: 'POST' });
-          const data = await response.json();
-
-          if (data.success) {
-            content.innerHTML = \`
-              <p>Scan this QR code with your authenticator app:</p>
-              <img src="\${data.qrCodeDataUrl}" alt="TOTP QR Code" class="qr-code" />
-              <p class="secret-code">Manual entry code: <code>\${data.secret}</code></p>
-              <form onsubmit="verifyTotpSetup(event)">
-                <div class="form-group">
-                  <label for="verify_code">Enter the 6-digit code from your app:</label>
-                  <input type="text" id="verify_code" pattern="[0-9]{6}" maxlength="6" required />
-                </div>
-                <button type="submit" class="btn btn-primary">Verify & Enable</button>
-              </form>
-            \`;
-          } else {
-            content.innerHTML = '<p class="error">Failed to setup TOTP: ' + data.error + '</p>';
-          }
-        } catch (err) {
-          content.innerHTML = '<p class="error">Error: ' + err.message + '</p>';
-        }
-      }
-
-      function closeTotpSetup() {
-        document.getElementById('totp-setup-modal').classList.add('hidden');
-      }
-
-      async function verifyTotpSetup(event) {
-        event.preventDefault();
-        const code = document.getElementById('verify_code').value;
-
-        try {
-          const response = await fetch('/mfa/totp/enable', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ code })
-          });
-          const data = await response.json();
-
-          if (data.success) {
-            window.location.reload();
-          } else {
-            console.error('[DashboardScript] TOTP verification failed - Status:', data.error);
-          }
-        } catch (err) {
-          console.error('[DashboardScript] Error during TOTP verification - Exception:', err.message);
-        }
-      }
-
-      async function deletePasskey(credentialId) {
-        if (!confirm('Are you sure you want to remove this passkey?')) return;
-
-        try {
-          const response = await fetch('/webauthn/credential/' + credentialId, {
-            method: 'DELETE'
-          });
-          const data = await response.json();
-
-          if (data.success) {
-            window.location.reload();
-          } else {
-            console.error('[DashboardScript] Failed to remove passkey - Status:', data.error);
-          }
-        } catch (err) {
-          console.error('[DashboardScript] Error removing passkey - Exception:', err.message);
-        }
-      }
-    `,
-    }}
-  />
-);
-
 export const DashboardPage: FC<DashboardPageProps> = ({
   user,
   session,
@@ -163,7 +80,7 @@ export const DashboardPage: FC<DashboardPageProps> = ({
           </div>
           <div class="security-option-actions">
             {user.totp_enabled ? (
-              <form action="/mfa/totp/disable" method="POST">
+              <form action="/mfa/totp/disable" method="post">
                 <button type="submit" class="btn btn-danger btn-small">
                   Disable
                 </button>
@@ -192,13 +109,13 @@ export const DashboardPage: FC<DashboardPageProps> = ({
           </div>
           <div class="security-option-actions">
             {user.email_mfa_enabled ? (
-              <form action="/mfa/email/disable" method="POST">
+              <form action="/mfa/email/disable" method="post">
                 <button type="submit" class="btn btn-danger btn-small">
                   Disable
                 </button>
               </form>
             ) : (
-              <form action="/mfa/email/enable" method="POST">
+              <form action="/mfa/email/enable" method="post">
                 <button type="submit" class="btn btn-primary btn-small">
                   Enable
                 </button>
@@ -257,12 +174,35 @@ export const DashboardPage: FC<DashboardPageProps> = ({
           &times;
         </span>
         <h3>Setup TOTP Authenticator</h3>
-        <div id="totp-setup-content">
-          <p>Loading...</p>
+        <p id="totp-setup-loading">Loading...</p>
+        <p id="totp-setup-error" class="error hidden"></p>
+        <div id="totp-setup-form" class="hidden">
+          <p>Scan this QR code with your authenticator app:</p>
+          <img id="totp-qr-code" src="" alt="TOTP QR Code" class="qr-code" />
+          <p class="secret-code">
+            Manual entry code: <code id="totp-secret"></code>
+          </p>
+          <form id="totp-verify-form">
+            <div class="form-group">
+              <label for="verify_code">
+                Enter the 6-digit code from your app:
+              </label>
+              <input
+                type="text"
+                id="verify_code"
+                pattern="[0-9]{6}"
+                maxlength={6}
+                required
+              />
+            </div>
+            <button type="submit" class="btn btn-primary">
+              Verify &amp; Enable
+            </button>
+          </form>
         </div>
       </div>
     </div>
 
-    <DashboardScript />
+    <script src="/js/dashboard.js"></script>
   </Layout>
 );

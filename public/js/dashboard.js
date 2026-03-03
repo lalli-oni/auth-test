@@ -1,4 +1,4 @@
-async function _showTotpSetup() {
+async function showTotpSetup() {
   const modal = document.getElementById('totp-setup-modal');
   const loading = document.getElementById('totp-setup-loading');
   const form = document.getElementById('totp-setup-form');
@@ -30,7 +30,7 @@ async function _showTotpSetup() {
   }
 }
 
-function _closeTotpSetup() {
+function closeTotpSetup() {
   document.getElementById('totp-setup-modal').classList.add('hidden');
 }
 
@@ -56,7 +56,7 @@ async function verifyTotpSetup(event) {
   }
 }
 
-async function _deletePasskey(credentialId) {
+async function deletePasskey(credentialId) {
   if (!confirm('Are you sure you want to remove this passkey?')) return;
 
   try {
