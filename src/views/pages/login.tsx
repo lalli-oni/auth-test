@@ -38,9 +38,32 @@ export const LoginPage: FC<LoginPageProps> = ({ error, success }) => (
           />
         </div>
 
-        <button type="submit" class="btn btn-primary">
-          Login
-        </button>
+        <div class="combo-btn">
+          <button type="submit" class="btn btn-primary combo-btn-main">
+            Login
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary combo-btn-toggle"
+            onclick="this.parentElement.classList.toggle('open')"
+          >
+            &#9662;
+          </button>
+          <div class="combo-btn-dropdown">
+            <button
+              type="button"
+              onclick="document.getElementById('require_static_2fa').value='1'; this.closest('form').submit();"
+            >
+              Login with 2FA
+            </button>
+          </div>
+        </div>
+        <input
+          type="hidden"
+          id="require_static_2fa"
+          name="require_static_2fa"
+          value=""
+        />
       </form>
 
       <div class="auth-divider">
@@ -89,6 +112,13 @@ export const LoginPage: FC<LoginPageProps> = ({ error, success }) => (
           </button>
         </div>
       </div>
+
+      <p style={{ marginTop: '0.75rem' }}>
+        Or open a dedicated passkey page:{' '}
+        <a href="/passkey" class="btn btn-secondary">
+          Use Passkey (Separate Page)
+        </a>
+      </p>
 
       <p class="auth-link">
         Don't have an account? <a href="/register">Register</a>
