@@ -38,6 +38,13 @@ export const LoginPage: FC<LoginPageProps> = ({ error, success }) => (
           />
         </div>
 
+        <div class="form-group">
+          <label>
+            <input type="checkbox" name="require_2fa" value="1" /> Login with
+            2FA
+          </label>
+        </div>
+
         <button type="submit" class="btn btn-primary">
           Login
         </button>
