@@ -212,4 +212,48 @@ mfa.post('/email/verify', async (c) => {
   return c.redirect('/dashboard');
 });
 
+// Static 2FA verify page
+mfa.get('/static-verify', (c) => {
+  const session = c.get('session');
+  const user = c.get('user');
+  if (!session || !user) return c.redirect('/login');
+  if (session.mfa_verified) return c.redirect('/dashboard');
+  return c.html(<MfaVerifyPage user={user} showStaticCode={true} />);
+});
+
+// Static 2FA verify handler
+mfa.post('/static-verify', async (c) => {
+  const session = c.get('session');
+  const user = c.get('user');
+  if (!session || !user) return c.redirect('/login');
+
+  const body = await c.req.parseBody();
+  const code = body.code as string;
+
+  if (!code) {
+    return c.html(
+      <MfaVerifyPage
+        user={user}
+        showStaticCode={true}
+        error="Code is required"
+      />,
+    );
+  }
+
+  if (code !== '1234') {
+    logAuthEvent('mfa_static_failed', user.id, { reason: 'invalid_code' });
+    return c.html(
+      <MfaVerifyPage
+        user={user}
+        showStaticCode={true}
+        error="Invalid 2FA code"
+      />,
+    );
+  }
+
+  updateSessionMfaVerified(session.id, true);
+  logAuthEvent('mfa_static_verified', user.id);
+  return c.redirect('/dashboard');
+});
+
 export default mfa;

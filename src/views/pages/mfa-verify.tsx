@@ -5,9 +5,14 @@ import { Layout } from '../layout';
 export interface MfaVerifyPageProps {
   user: User;
   error?: string;
+  showStaticCode?: boolean;
 }
 
-export const MfaVerifyPage: FC<MfaVerifyPageProps> = ({ user, error }) => {
+export const MfaVerifyPage: FC<MfaVerifyPageProps> = ({
+  user,
+  error,
+  showStaticCode,
+}) => {
   const showTotp = user.totp_enabled;
   const showEmail = user.email_mfa_enabled;
 
@@ -23,7 +28,7 @@ export const MfaVerifyPage: FC<MfaVerifyPageProps> = ({ user, error }) => {
           <div class="mfa-option">
             <h3>Authenticator App</h3>
             <p>Enter the 6-digit code from your authenticator app.</p>
-            <form action="/mfa/totp/verify" method="POST" class="auth-form">
+            <form action="/mfa/totp/verify" method="post" class="auth-form">
               <div class="form-group">
                 <label for="totp_code">TOTP Code</label>
                 <input
@@ -56,14 +61,14 @@ export const MfaVerifyPage: FC<MfaVerifyPageProps> = ({ user, error }) => {
           <div class="mfa-option">
             <h3>Email Code</h3>
             <p>We'll send a verification code to your email.</p>
-            <form action="/mfa/email/send" method="POST" class="inline-form">
+            <form action="/mfa/email/send" method="post" class="inline-form">
               <button type="submit" class="btn btn-secondary">
                 Send Code
               </button>
             </form>
             <form
               action="/mfa/email/verify"
-              method="POST"
+              method="post"
               class="auth-form"
               style={{ marginTop: '1rem' }}
             >
@@ -88,8 +93,39 @@ export const MfaVerifyPage: FC<MfaVerifyPageProps> = ({ user, error }) => {
           </div>
         )}
 
+        {(showTotp || showEmail) && showStaticCode && (
+          <div class="auth-divider">
+            <span>or</span>
+          </div>
+        )}
+
+        {showStaticCode && (
+          <div class="mfa-option">
+            <h3>2FA Code</h3>
+            <p>Enter your 2FA code to complete login.</p>
+            <form action="/mfa/static-verify" method="post" class="auth-form">
+              <div class="form-group">
+                <label for="static_code">2FA Code</label>
+                <input
+                  type="text"
+                  id="static_code"
+                  name="code"
+                  inputmode="numeric"
+                  autocomplete="one-time-code"
+                  required
+                  autofocus
+                  placeholder="Enter code"
+                />
+              </div>
+              <button type="submit" class="btn btn-primary">
+                Verify
+              </button>
+            </form>
+          </div>
+        )}
+
         <div class="mfa-cancel">
-          <form action="/auth/logout" method="POST">
+          <form action="/auth/logout" method="post">
             <button type="submit" class="btn-link">
               Cancel and Logout
             </button>

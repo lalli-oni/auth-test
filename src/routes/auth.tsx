@@ -8,6 +8,7 @@ import {
   verifyPassword,
 } from '../services/user.service';
 import { LoginPage } from '../views/pages/login';
+import { PasskeyPage } from '../views/pages/passkey';
 import { RegisterPage } from '../views/pages/register';
 
 const auth = new Hono();
@@ -46,12 +47,18 @@ auth.post('/login', async (c) => {
     return c.html(<LoginPage error="Invalid username or password" />);
   }
 
+  const wantsStatic2fa =
+    (body.require_static_2fa as string) === '1' &&
+    !(user.totp_enabled || user.email_mfa_enabled);
+
   // Create session
   const session = createSession({
     userId: user.id,
     userAgent: c.req.header('User-Agent'),
     ipAddress: c.req.header('X-Forwarded-For') || c.req.header('X-Real-IP'),
-    mfaVerified: !(user.totp_enabled || user.email_mfa_enabled),
+    mfaVerified: wantsStatic2fa
+      ? false
+      : !(user.totp_enabled || user.email_mfa_enabled),
   });
 
   setSessionCookie(c, session.id);
@@ -60,6 +67,10 @@ auth.post('/login', async (c) => {
   // Redirect based on MFA status
   if (user.totp_enabled || user.email_mfa_enabled) {
     return c.redirect('/mfa/verify');
+  }
+
+  if (wantsStatic2fa) {
+    return c.redirect('/mfa/static-verify');
   }
 
   return c.redirect('/dashboard');
@@ -134,6 +145,15 @@ auth.post('/logout', (c) => {
 
   clearSessionCookie(c);
   return c.redirect('/login');
+});
+
+// Passkey redirect page (triggers client-side get request)
+auth.get('/passkey', (c) => {
+  const session = c.get('session');
+  if (session) {
+    return c.redirect('/dashboard');
+  }
+  return c.html(<PasskeyPage />);
 });
 
 // Auth status API (for JS clients)

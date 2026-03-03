@@ -26,7 +26,9 @@ export type AuthEventType =
   | 'passkey_registered'
   | 'passkey_deleted'
   | 'passkey_auth_success'
-  | 'passkey_auth_failed';
+  | 'passkey_auth_failed'
+  | 'mfa_static_verified'
+  | 'mfa_static_failed';
 
 export function logAuthEvent(
   eventType: AuthEventType,
