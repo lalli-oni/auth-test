@@ -47,11 +47,10 @@ src/
 │   └── email-code.service.ts
 ├── views/
 │   ├── layout.tsx      # Base HTML layout with admin sidebar
-│   ├── pages/          # Page components (dashboard, login, register, mfa-verify)
-│   └── scripts/        # Client-side JS rendered as strings
+│   └── pages/          # Page components (login, register, dashboard, mfa-verify, passkey, passkey-conditional)
 public/
 ├── css/styles.css      # Styles
-└── js/                 # Client-side JavaScript (webauthn.js, dashboard.js, admin.js)
+└── js/                 # Client-side JavaScript (webauthn.js, dashboard.js, login.js, admin.js, passkey-conditional.js)
 ```
 
 ## Key Patterns
@@ -63,6 +62,8 @@ public/
 **Views**: Use Hono's JSX (`import type { FC } from "hono/jsx"`). Forms should use lowercase `method="post"` (not `"POST"`).
 
 **Client Scripts**: Place in `public/js/`. Load via `<script src="/js/filename.js">`. Avoid `dangerouslySetInnerHTML`.
+
+**Passkey Conditional Page**: `/passkey-conditional` is a standalone page that auto-triggers a WebAuthn conditional mediation request on load via `public/js/passkey-conditional.js`. Use this pattern for dedicated passkey flows.
 
 ## Bun-Specific
 
