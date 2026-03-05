@@ -14,14 +14,32 @@ Testing tools that interact with authentication flows — password managers, bro
 
 ## Auth flows
 
-| Flow | URL | Notes |
-|------|-----|-------|
-| Register | `/register` | Username + password |
-| Login | `/login` | Password, passkey, or conditional passkey |
-| Passkey (conditional) | `/passkey-conditional` | Auto-triggers WebAuthn conditional mediation on load |
-| TOTP MFA | `/mfa/verify` | After login, if TOTP is enabled |
-| Email MFA | `/mfa/verify` | After login, if email MFA is enabled |
-| Dashboard | `/dashboard` | Reached after successful (+ MFA) login |
+| Flow | Status | Password | MFA | Passkey | Notes |
+|------|--------|----------|-----|---------|-------|
+| **Login** | | | | | |
+| &nbsp;&nbsp;↳ Password | Implemented | ✓ | Optional (TOTP or email code) | — | MFA checkbox on form; bypassed if unchecked |
+| &nbsp;&nbsp;↳ Passkey | Implemented | — | — | ✓ | Multiple mediation modes (conditional, optional, required, silent) |
+| &nbsp;&nbsp;↳ Passkey (dedicated page) | Implemented | — | — | ✓ | `/passkey-conditional` — auto-triggers conditional mediation on load |
+| &nbsp;&nbsp;↳ Identifier-first → password | Not implemented | ✓ | Optional | — | Username on step 1, password on step 2 |
+| &nbsp;&nbsp;↳ Identifier-first → passkey | Not implemented | — | — | ✓ | Username on step 1, passkey prompt on step 2 |
+| &nbsp;&nbsp;↳ Identifier-first → code | Not implemented | — | TOTP or email code | — | Username on step 1, code entry on step 2 |
+| **Registration / Onboarding** | | | | | |
+| &nbsp;&nbsp;↳ Password registration | Implemented | ✓ | — | — | Email optional, not verified |
+| &nbsp;&nbsp;↳ Passwordless (passkey-only) | Not implemented | — | — | ✓ | Registration always requires a password today |
+| **MFA** | | | | | |
+| &nbsp;&nbsp;↳ MFA verify (post-login) | Implemented | — | TOTP or email code | — | Triggered when session `mfa_verified: false` |
+| &nbsp;&nbsp;↳ TOTP setup | Implemented | — | TOTP (setup) | — | QR code + manual entry; code verified before enabling |
+| &nbsp;&nbsp;↳ Email MFA enable/disable | Implemented | — | Email code (toggle) | — | No verification on enable; codes fetched via admin API |
+| &nbsp;&nbsp;↳ Backup / recovery codes | Not implemented | — | — | — | No fallback if TOTP device lost |
+| **Passkeys** | | | | | |
+| &nbsp;&nbsp;↳ Register passkey | Implemented | — | — | ✓ | From dashboard, requires active session |
+| &nbsp;&nbsp;↳ Delete passkey | Implemented | — | — | ✓ | From dashboard |
+| **Account management** | | | | | |
+| &nbsp;&nbsp;↳ Logout | Implemented | — | — | — | Clears session from DB and cookie |
+| &nbsp;&nbsp;↳ Forgot password | Not implemented | — | — | — | No reset flow |
+| &nbsp;&nbsp;↳ Email verification | Not implemented | — | — | — | Email stored but never verified |
+| &nbsp;&nbsp;↳ Login history (user-facing) | Not implemented | — | — | — | Auth events in DB, admin-only |
+| &nbsp;&nbsp;↳ Social / OAuth | Not implemented | — | — | — | Out of scope |
 
 ## Admin API
 
