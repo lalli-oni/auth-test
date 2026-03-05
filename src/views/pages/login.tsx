@@ -39,9 +39,18 @@ export const LoginPage: FC<LoginPageProps> = ({ error, success }) => (
         </div>
 
         <div class="form-group">
-          <label>
-            <input type="checkbox" name="require_2fa" value="1" /> Login with
-            2FA
+          <label
+            id="mfa-label"
+            title="Enter your username to check 2FA availability"
+          >
+            <input
+              type="checkbox"
+              id="require_2fa"
+              name="require_2fa"
+              value="1"
+              disabled
+            />{' '}
+            Login with 2FA
           </label>
         </div>
 
@@ -101,5 +110,6 @@ export const LoginPage: FC<LoginPageProps> = ({ error, success }) => (
         Don't have an account? <a href="/register">Register</a>
       </p>
     </div>
+    <script src="/js/login.js" />
   </Layout>
 );

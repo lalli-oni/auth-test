@@ -46,19 +46,21 @@ auth.post('/login', async (c) => {
     return c.html(<LoginPage error="Invalid username or password" />);
   }
 
-  // Create session
+  const hasMfa = !!(user.totp_enabled || user.email_mfa_enabled);
+  const wants2fa = (body.require_2fa as string) === '1';
+
+  // Create session — bypass MFA if user unchecked "Login with 2FA"
   const session = createSession({
     userId: user.id,
     userAgent: c.req.header('User-Agent'),
     ipAddress: c.req.header('X-Forwarded-For') || c.req.header('X-Real-IP'),
-    mfaVerified: !(user.totp_enabled || user.email_mfa_enabled),
+    mfaVerified: !(wants2fa && hasMfa),
   });
 
   setSessionCookie(c, session.id);
   logAuthEvent('login_success', user.id);
 
-  // Redirect based on MFA status
-  if (user.totp_enabled || user.email_mfa_enabled) {
+  if (wants2fa && hasMfa) {
     return c.redirect('/mfa/verify');
   }
 
@@ -134,6 +136,17 @@ auth.post('/logout', (c) => {
 
   clearSessionCookie(c);
   return c.redirect('/login');
+});
+
+// MFA status check (used by login page to conditionally enable 2FA checkbox)
+auth.get('/mfa-status', (c) => {
+  const username = c.req.query('username');
+  if (!username) return c.json({ hasMfa: false });
+
+  const user = getUserByUsername(username);
+  if (!user) return c.json({ hasMfa: false });
+
+  return c.json({ hasMfa: !!(user.totp_enabled || user.email_mfa_enabled) });
 });
 
 // Auth status API (for JS clients)
