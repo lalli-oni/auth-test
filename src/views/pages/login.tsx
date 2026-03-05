@@ -69,7 +69,7 @@ export const LoginPage: FC<LoginPageProps> = ({ error, success }) => (
           onclick="WebAuthnClient.loginWithPasskey('conditional')"
           class="btn btn-secondary combo-btn-main"
         >
-          Login with Passkey
+          Login with Passkey (conditional)
         </button>
         <button
           type="button"
@@ -79,6 +79,12 @@ export const LoginPage: FC<LoginPageProps> = ({ error, success }) => (
           &#9662;
         </button>
         <div class="combo-btn-dropdown">
+          <button
+            type="button"
+            onclick="window.location.href='/passkey-conditional'"
+          >
+            New page (conditional)
+          </button>
           <button
             type="button"
             onclick="WebAuthnClient.loginWithPasskey(undefined)"
