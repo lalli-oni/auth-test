@@ -9,6 +9,7 @@ import webauthnRoutes from './routes/webauthn';
 import { getCredentialsByUserId } from './services/webauthn.service';
 import { Layout } from './views/layout';
 import { DashboardPage } from './views/pages/dashboard';
+import PasskeyConditionalPage from './views/pages/passkey-conditional';
 
 const app = new Hono();
 
@@ -65,6 +66,9 @@ app.get('/', (c) => {
 // Login/Register redirects
 app.get('/login', (c) => c.redirect('/auth/login'));
 app.get('/register', (c) => c.redirect('/auth/register'));
+
+// Standalone passkey page (conditional mediation, triggers on load)
+app.get('/passkey-conditional', (c) => c.html(<PasskeyConditionalPage />));
 
 // Dashboard
 app.get('/dashboard', (c) => {
