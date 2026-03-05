@@ -1,5 +1,9 @@
 import { Hono } from 'hono';
-import { clearSessionCookie, setSessionCookie } from '../middleware/session';
+import {
+  clearSessionCookie,
+  getClientIP,
+  setSessionCookie,
+} from '../middleware/session';
 import { logAuthEvent } from '../services/auth-event.service';
 import { createSession, deleteSession } from '../services/session.service';
 import {
@@ -46,14 +50,14 @@ auth.post('/login', async (c) => {
     return c.html(<LoginPage error="Invalid username or password" />);
   }
 
-  const hasMfa = !!(user.totp_enabled || user.email_mfa_enabled);
+  const hasMfa = user.totp_enabled || user.email_mfa_enabled;
   const wants2fa = (body.require_2fa as string) === '1';
 
   // Create session — bypass MFA if user unchecked "Login with 2FA"
   const session = createSession({
     userId: user.id,
     userAgent: c.req.header('User-Agent'),
-    ipAddress: c.req.header('X-Forwarded-For') || c.req.header('X-Real-IP'),
+    ipAddress: getClientIP(c),
     mfaVerified: !(wants2fa && hasMfa),
   });
 
@@ -92,12 +96,6 @@ auth.post('/register', async (c) => {
     return c.html(<RegisterPage error="Passwords do not match" />);
   }
 
-  if (password.length < 6) {
-    return c.html(
-      <RegisterPage error="Password must be at least 6 characters" />,
-    );
-  }
-
   const existingUser = getUserByUsername(username);
   if (existingUser) {
     return c.html(<RegisterPage error="Username already taken" />);
@@ -111,17 +109,19 @@ auth.post('/register', async (c) => {
     const session = createSession({
       userId: user.id,
       userAgent: c.req.header('User-Agent'),
-      ipAddress: c.req.header('X-Forwarded-For') || c.req.header('X-Real-IP'),
+      ipAddress: getClientIP(c),
       mfaVerified: true, // No MFA enabled yet
     });
 
     setSessionCookie(c, session.id);
 
     return c.redirect('/dashboard');
-  } catch (_error) {
-    return c.html(
-      <RegisterPage error="Failed to create account. Please try again." />,
-    );
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : 'Failed to create account. Please try again.';
+    return c.html(<RegisterPage error={message} />);
   }
 });
 
@@ -146,7 +146,7 @@ auth.get('/mfa-status', (c) => {
   const user = getUserByUsername(username);
   if (!user) return c.json({ hasMfa: false });
 
-  return c.json({ hasMfa: !!(user.totp_enabled || user.email_mfa_enabled) });
+  return c.json({ hasMfa: user.totp_enabled || user.email_mfa_enabled });
 });
 
 // Auth status API (for JS clients)
@@ -164,11 +164,11 @@ auth.get('/status', (c) => {
       id: user.id,
       username: user.username,
       email: user.email,
-      totpEnabled: !!user.totp_enabled,
-      emailMfaEnabled: !!user.email_mfa_enabled,
+      totpEnabled: user.totp_enabled,
+      emailMfaEnabled: user.email_mfa_enabled,
     },
     session: {
-      mfaVerified: !!session.mfa_verified,
+      mfaVerified: session.mfa_verified,
       expiresAt: session.expires_at,
     },
   });

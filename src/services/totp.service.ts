@@ -1,3 +1,4 @@
+// otplib is CJS-only; require() is needed for this module
 const { authenticator } = require('otplib');
 
 import * as QRCode from 'qrcode';

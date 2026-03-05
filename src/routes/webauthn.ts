@@ -1,5 +1,9 @@
 import { Hono } from 'hono';
-import { setSessionCookie } from '../middleware/session';
+import {
+  getClientIP,
+  requireAuthApi,
+  setSessionCookie,
+} from '../middleware/session';
 import { logAuthEvent } from '../services/auth-event.service';
 import {
   createSession,
@@ -9,7 +13,6 @@ import {
   deleteCredential,
   generateAuthenticationOptionsForUser,
   generateRegistrationOptionsForUser,
-  getCredentialsByUserId,
   verifyAuthenticationResponseForUser,
   verifyRegistrationResponseForUser,
 } from '../services/webauthn.service';
@@ -17,13 +20,8 @@ import {
 const webauthn = new Hono();
 
 // Registration: Get options
-webauthn.post('/register/options', async (c) => {
-  const session = c.get('session');
-  const user = c.get('user');
-
-  if (!session || !user) {
-    return c.json({ success: false, error: 'Not authenticated' }, 401);
-  }
+webauthn.post('/register/options', requireAuthApi, async (c) => {
+  const user = c.get('user')!;
 
   const result = await generateRegistrationOptionsForUser(user.id);
   if (!result) {
@@ -38,13 +36,8 @@ webauthn.post('/register/options', async (c) => {
 });
 
 // Registration: Verify response
-webauthn.post('/register/verify', async (c) => {
-  const session = c.get('session');
-  const user = c.get('user');
-
-  if (!session || !user) {
-    return c.json({ success: false, error: 'Not authenticated' }, 401);
-  }
+webauthn.post('/register/verify', requireAuthApi, async (c) => {
+  const user = c.get('user')!;
 
   const body = await c.req.json();
   const { response, requestToken, friendlyName } = body;
@@ -123,7 +116,7 @@ webauthn.post('/auth/verify', async (c) => {
     const newSession = createSession({
       userId: result.userId,
       userAgent: c.req.header('User-Agent'),
-      ipAddress: c.req.header('X-Forwarded-For') || c.req.header('X-Real-IP'),
+      ipAddress: getClientIP(c),
       mfaVerified: true, // Passkey login counts as MFA
     });
 
@@ -141,25 +134,16 @@ webauthn.post('/auth/verify', async (c) => {
 });
 
 // Delete credential
-webauthn.delete('/credential/:id', (c) => {
-  const session = c.get('session');
-  const user = c.get('user');
-
-  if (!session || !user) {
-    return c.json({ success: false, error: 'Not authenticated' }, 401);
-  }
-
+webauthn.delete('/credential/:id', requireAuthApi, (c) => {
+  const user = c.get('user')!;
   const credentialId = c.req.param('id');
 
-  // Verify the credential belongs to the user
-  const credentials = getCredentialsByUserId(user.id);
-  const credential = credentials.find((c) => c.id === credentialId);
+  const deleted = deleteCredential(credentialId, user.id);
 
-  if (!credential) {
+  if (!deleted) {
     return c.json({ success: false, error: 'Credential not found' });
   }
 
-  deleteCredential(credentialId);
   logAuthEvent('passkey_deleted', user.id, { credentialId });
 
   return c.json({ success: true });

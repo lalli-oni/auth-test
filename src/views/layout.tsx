@@ -1,11 +1,9 @@
 import type { FC, PropsWithChildren } from 'hono/jsx';
-import type { Session } from '../services/session.service';
 import type { User } from '../services/user.service';
 
 export interface LayoutProps {
   title: string;
   user?: User | null;
-  session?: Session | null;
   showAdminPanel?: boolean;
 }
 
@@ -94,7 +92,7 @@ export const Layout: FC<PropsWithChildren<LayoutProps>> = ({
                   <a href="/dashboard">Dashboard</a>
                   <form
                     action="/auth/logout"
-                    method="POST"
+                    method="post"
                     style={{ display: 'inline' }}
                   >
                     <button type="submit" class="btn-link">

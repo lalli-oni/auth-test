@@ -28,6 +28,16 @@ export type AuthEventType =
   | 'passkey_auth_success'
   | 'passkey_auth_failed';
 
+export function serializeEvent(e: AuthEvent) {
+  return {
+    id: e.id,
+    userId: e.user_id,
+    eventType: e.event_type,
+    details: e.details ? JSON.parse(e.details) : null,
+    createdAt: e.created_at,
+  };
+}
+
 export function logAuthEvent(
   eventType: AuthEventType,
   userId?: number,
