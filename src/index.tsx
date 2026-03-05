@@ -4,12 +4,11 @@ import { getDatabase } from './db/database';
 import { sessionMiddleware } from './middleware/session';
 import adminRoutes from './routes/admin';
 import authRoutes from './routes/auth';
+import dashboardRoutes from './routes/dashboard';
 import mfaRoutes from './routes/mfa';
 import webauthnRoutes from './routes/webauthn';
-import { getCredentialsByUserId } from './services/webauthn.service';
 import { Layout } from './views/layout';
-import { DashboardPage } from './views/pages/dashboard';
-import PasskeyConditionalPage from './views/pages/passkey-conditional';
+import { PasskeyPage } from './views/pages/passkey';
 
 const app = new Hono();
 
@@ -18,7 +17,6 @@ getDatabase();
 
 // Static files
 app.use('/css/*', serveStatic({ root: './public' }));
-
 app.use('/js/*', serveStatic({ root: './public' }));
 
 // Session middleware for all routes
@@ -29,6 +27,7 @@ app.route('/auth', authRoutes);
 app.route('/mfa', mfaRoutes);
 app.route('/webauthn', webauthnRoutes);
 app.route('/admin', adminRoutes);
+app.route('/dashboard', dashboardRoutes);
 
 // Home page
 app.get('/', (c) => {
@@ -67,37 +66,10 @@ app.get('/', (c) => {
 app.get('/login', (c) => c.redirect('/auth/login'));
 app.get('/register', (c) => c.redirect('/auth/register'));
 
-// Standalone passkey page (conditional mediation, triggers on load)
-app.get('/passkey-conditional', (c) => c.html(<PasskeyConditionalPage />));
-
-// Dashboard
-app.get('/dashboard', (c) => {
-  const session = c.get('session');
-  const user = c.get('user');
-
-  if (!session || !user) {
-    return c.redirect('/login');
-  }
-
-  // Check if MFA is required but not verified
-  if ((user.totp_enabled || user.email_mfa_enabled) && !session.mfa_verified) {
-    return c.redirect('/mfa/verify');
-  }
-
-  const passkeys = getCredentialsByUserId(user.id);
-  const message = c.req.query('message');
-  const error = c.req.query('error');
-
-  return c.html(
-    <DashboardPage
-      user={user}
-      session={session}
-      passkeys={passkeys}
-      message={message}
-      error={error}
-    />,
-  );
-});
+// Standalone passkey pages (auto-trigger WebAuthn on load)
+app.get('/passkey-conditional', (c) =>
+  c.html(<PasskeyPage mediation="conditional" />),
+);
 
 // Start server
 const port = 3000;

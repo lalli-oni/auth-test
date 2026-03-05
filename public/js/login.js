@@ -28,7 +28,7 @@
 
     try {
       const res = await fetch(
-        '/auth/mfa-status?username=' + encodeURIComponent(username),
+        `/auth/mfa-status?username=${encodeURIComponent(username)}`,
       );
       const data = await res.json();
 

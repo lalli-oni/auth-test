@@ -1,4 +1,5 @@
 import type { FC } from 'hono/jsx';
+import { Alert, AuthCard, FormGroup } from '../components';
 import { Layout } from '../layout';
 
 export interface LoginPageProps {
@@ -8,15 +9,11 @@ export interface LoginPageProps {
 
 export const LoginPage: FC<LoginPageProps> = ({ error, success }) => (
   <Layout title="Login">
-    <div class="auth-form-container">
-      <h2>Login</h2>
-
-      {error && <div class="alert alert-error">{error}</div>}
-      {success && <div class="alert alert-success">{success}</div>}
+    <AuthCard title="Login">
+      <Alert error={error} success={success} />
 
       <form action="/auth/login" method="post" class="auth-form">
-        <div class="form-group">
-          <label for="username">Username</label>
+        <FormGroup label="Username" htmlFor="username">
           <input
             type="text"
             id="username"
@@ -25,10 +22,9 @@ export const LoginPage: FC<LoginPageProps> = ({ error, success }) => (
             required
             autofocus
           />
-        </div>
+        </FormGroup>
 
-        <div class="form-group">
-          <label for="password">Password</label>
+        <FormGroup label="Password" htmlFor="password">
           <input
             type="password"
             id="password"
@@ -36,7 +32,7 @@ export const LoginPage: FC<LoginPageProps> = ({ error, success }) => (
             autocomplete="current-password"
             required
           />
-        </div>
+        </FormGroup>
 
         <div class="form-group">
           <label
@@ -115,7 +111,7 @@ export const LoginPage: FC<LoginPageProps> = ({ error, success }) => (
       <p class="auth-link">
         Don't have an account? <a href="/register">Register</a>
       </p>
-    </div>
+    </AuthCard>
     <script src="/js/login.js" />
   </Layout>
 );

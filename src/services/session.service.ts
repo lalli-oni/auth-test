@@ -1,9 +1,19 @@
 import { getDatabase } from '../db/database';
 
-export interface Session {
+interface SessionRow {
   id: string;
   user_id: number;
   mfa_verified: number;
+  expires_at: string;
+  user_agent: string | null;
+  ip_address: string | null;
+  created_at: string;
+}
+
+export interface Session {
+  id: string;
+  user_id: number;
+  mfa_verified: boolean;
   expires_at: string;
   user_agent: string | null;
   ip_address: string | null;
@@ -23,6 +33,10 @@ function generateSessionId(): string {
   return Array.from(bytes)
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('');
+}
+
+function toSession(row: SessionRow): Session {
+  return { ...row, mfa_verified: !!row.mfa_verified };
 }
 
 export function createSession(input: CreateSessionInput): Session {
@@ -47,33 +61,36 @@ export function createSession(input: CreateSessionInput): Session {
 
 export function getSessionById(id: string): Session | null {
   const db = getDatabase();
-  return db
+  const row = db
     .query('SELECT * FROM sessions WHERE id = ?')
-    .get(id) as Session | null;
+    .get(id) as SessionRow | null;
+  return row ? toSession(row) : null;
 }
 
 export function getValidSession(id: string): Session | null {
   const db = getDatabase();
-  const session = db
+  const row = db
     .query(
       "SELECT * FROM sessions WHERE id = ? AND expires_at > datetime('now')",
     )
-    .get(id) as Session | null;
-  return session;
+    .get(id) as SessionRow | null;
+  return row ? toSession(row) : null;
 }
 
 export function getSessionsByUserId(userId: number): Session[] {
   const db = getDatabase();
-  return db
+  const rows = db
     .query('SELECT * FROM sessions WHERE user_id = ? ORDER BY created_at DESC')
-    .all(userId) as Session[];
+    .all(userId) as SessionRow[];
+  return rows.map(toSession);
 }
 
 export function getAllSessions(): Session[] {
   const db = getDatabase();
-  return db
+  const rows = db
     .query('SELECT * FROM sessions ORDER BY created_at DESC')
-    .all() as Session[];
+    .all() as SessionRow[];
+  return rows.map(toSession);
 }
 
 export function updateSessionMfaVerified(id: string, verified: boolean): void {

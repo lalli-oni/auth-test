@@ -1,4 +1,5 @@
 import type { FC } from 'hono/jsx';
+import { Alert, AuthCard, FormGroup } from '../components';
 import { Layout } from '../layout';
 
 export interface RegisterPageProps {
@@ -7,14 +8,11 @@ export interface RegisterPageProps {
 
 export const RegisterPage: FC<RegisterPageProps> = ({ error }) => (
   <Layout title="Register">
-    <div class="auth-form-container">
-      <h2>Create Account</h2>
+    <AuthCard title="Create Account">
+      <Alert error={error} />
 
-      {error && <div class="alert alert-error">{error}</div>}
-
-      <form action="/auth/register" method="POST" class="auth-form">
-        <div class="form-group">
-          <label for="username">Username</label>
+      <form action="/auth/register" method="post" class="auth-form">
+        <FormGroup label="Username" htmlFor="username">
           <input
             type="text"
             id="username"
@@ -25,15 +23,13 @@ export const RegisterPage: FC<RegisterPageProps> = ({ error }) => (
             minlength={3}
             maxlength={50}
           />
-        </div>
+        </FormGroup>
 
-        <div class="form-group">
-          <label for="email">Email (optional)</label>
+        <FormGroup label="Email (optional)" htmlFor="email">
           <input type="email" id="email" name="email" autocomplete="email" />
-        </div>
+        </FormGroup>
 
-        <div class="form-group">
-          <label for="password">Password</label>
+        <FormGroup label="Password" htmlFor="password">
           <input
             type="password"
             id="password"
@@ -42,10 +38,9 @@ export const RegisterPage: FC<RegisterPageProps> = ({ error }) => (
             required
             minlength={6}
           />
-        </div>
+        </FormGroup>
 
-        <div class="form-group">
-          <label for="confirm_password">Confirm Password</label>
+        <FormGroup label="Confirm Password" htmlFor="confirm_password">
           <input
             type="password"
             id="confirm_password"
@@ -53,7 +48,7 @@ export const RegisterPage: FC<RegisterPageProps> = ({ error }) => (
             autocomplete="new-password"
             required
           />
-        </div>
+        </FormGroup>
 
         <button type="submit" class="btn btn-primary">
           Create Account
@@ -63,6 +58,6 @@ export const RegisterPage: FC<RegisterPageProps> = ({ error }) => (
       <p class="auth-link">
         Already have an account? <a href="/login">Login</a>
       </p>
-    </div>
+    </AuthCard>
   </Layout>
 );
