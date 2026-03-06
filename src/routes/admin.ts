@@ -170,7 +170,8 @@ admin.patch('/users/:id', async (c) => {
     email_mfa_enabled: emailMfaEnabled,
   });
 
-  return c.json({ success: true, user: serializeUser(updated!) });
+  if (!updated) return userNotFound(c);
+  return c.json({ success: true, user: serializeUser(updated) });
 });
 
 // Delete user
