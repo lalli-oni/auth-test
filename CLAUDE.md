@@ -44,13 +44,14 @@ src/
 │   ├── session.service.ts
 │   ├── webauthn.service.ts
 │   ├── totp.service.ts
-│   └── email-code.service.ts
+│   ├── email-code.service.ts
+│   └── auth-event.service.ts
 ├── views/
 │   ├── layout.tsx      # Base HTML layout with admin sidebar
-│   └── pages/          # Page components (login, register, dashboard, mfa-verify, passkey, passkey-conditional)
+│   └── pages/          # Page components (login, register, dashboard, mfa-verify, passkey)
 public/
 ├── css/styles.css      # Styles
-└── js/                 # Client-side JavaScript (webauthn.js, dashboard.js, login.js, admin.js, passkey-conditional.js)
+└── js/                 # Client-side JavaScript (webauthn.js, dashboard.js, login.js, admin.js, passkey-auto.js)
 ```
 
 ## Key Patterns
@@ -63,7 +64,7 @@ public/
 
 **Client Scripts**: Place in `public/js/`. Load via `<script src="/js/filename.js">`. Avoid `dangerouslySetInnerHTML`.
 
-**Passkey Conditional Page**: `/passkey-conditional` is a standalone page that auto-triggers a WebAuthn conditional mediation request on load via `public/js/passkey-conditional.js`. Use this pattern for dedicated passkey flows.
+**Passkey Conditional Page**: `/passkey-conditional` is a standalone page that auto-triggers a WebAuthn conditional mediation request on load via `public/js/passkey-auto.js`. Use this pattern for dedicated passkey flows.
 
 ## Bun-Specific
 

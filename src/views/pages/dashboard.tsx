@@ -2,13 +2,14 @@ import type { FC } from 'hono/jsx';
 import type { Session } from '../../services/session.service';
 import type { User } from '../../services/user.service';
 import type { PasskeyCredential } from '../../services/webauthn.service';
+import { Alert } from '../components';
 import { Layout } from '../layout';
 
 export interface DashboardPageProps {
   user: User;
   session: Session;
   passkeys: PasskeyCredential[];
-  message?: string;
+  success?: string;
   error?: string;
 }
 
@@ -35,15 +36,14 @@ export const DashboardPage: FC<DashboardPageProps> = ({
   user,
   session,
   passkeys,
-  message,
+  success,
   error,
 }) => (
   <Layout title="Dashboard" user={user}>
     <div class="dashboard">
       <h2>Dashboard</h2>
 
-      {message && <div class="alert alert-success">{message}</div>}
-      {error && <div class="alert alert-error">{error}</div>}
+      <Alert error={error} success={success} />
 
       <div class="dashboard-section">
         <h3>Account Information</h3>

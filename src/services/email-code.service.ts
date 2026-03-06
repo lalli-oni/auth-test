@@ -1,12 +1,25 @@
 import { getDatabase } from '../db/database';
 
-export interface EmailCode {
+interface EmailCodeRow {
   id: number;
   user_id: number;
   code: string;
   expires_at: string;
   used: number;
   created_at: string;
+}
+
+export interface EmailCode {
+  id: number;
+  user_id: number;
+  code: string;
+  expires_at: string;
+  used: boolean;
+  created_at: string;
+}
+
+function toEmailCode(row: EmailCodeRow): EmailCode {
+  return { ...row, used: !!row.used };
 }
 
 function generateCode(): string {
@@ -33,41 +46,43 @@ export function createEmailCode(userId: number): EmailCode {
 
 export function getEmailCodeById(id: number): EmailCode | null {
   const db = getDatabase();
-  return db
+  const row = db
     .query('SELECT * FROM email_codes WHERE id = ?')
-    .get(id) as EmailCode | null;
+    .get(id) as EmailCodeRow | null;
+  return row ? toEmailCode(row) : null;
 }
 
 export function getActiveEmailCodes(userId: number): EmailCode[] {
   const db = getDatabase();
-  return db
+  const rows = db
     .query(
       "SELECT * FROM email_codes WHERE user_id = ? AND used = 0 AND expires_at > datetime('now') ORDER BY created_at DESC",
     )
-    .all(userId) as EmailCode[];
+    .all(userId) as EmailCodeRow[];
+  return rows.map(toEmailCode);
 }
 
 export function getAllEmailCodes(userId: number): EmailCode[] {
   const db = getDatabase();
-  return db
+  const rows = db
     .query(
       'SELECT * FROM email_codes WHERE user_id = ? ORDER BY created_at DESC',
     )
-    .all(userId) as EmailCode[];
+    .all(userId) as EmailCodeRow[];
+  return rows.map(toEmailCode);
 }
 
 export function verifyEmailCode(userId: number, code: string): boolean {
   const db = getDatabase();
-  const emailCode = db
+  const row = db
     .query(
       "SELECT * FROM email_codes WHERE user_id = ? AND code = ? AND used = 0 AND expires_at > datetime('now')",
     )
-    .get(userId, code) as EmailCode | null;
+    .get(userId, code) as EmailCodeRow | null;
 
-  if (!emailCode) return false;
+  if (!row) return false;
 
-  // Mark the code as used
-  db.run('UPDATE email_codes SET used = 1 WHERE id = ?', [emailCode.id]);
+  db.run('UPDATE email_codes SET used = 1 WHERE id = ?', [row.id]);
 
   return true;
 }

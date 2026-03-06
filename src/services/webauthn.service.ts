@@ -19,7 +19,7 @@ const RP_NAME = 'Auth Test App';
 const RP_ID = 'localhost';
 const ORIGIN = 'http://localhost:3000';
 
-export interface PasskeyCredential {
+interface PasskeyCredentialRow {
   id: string;
   user_id: number;
   public_key: string;
@@ -31,6 +31,18 @@ export interface PasskeyCredential {
   created_at: string;
 }
 
+export interface PasskeyCredential {
+  id: string;
+  user_id: number;
+  public_key: string;
+  counter: number;
+  transports: string | null;
+  device_type: string | null;
+  backed_up: boolean;
+  friendly_name: string | null;
+  created_at: string;
+}
+
 export interface WebAuthnChallenge {
   id: number;
   user_id: number | null;
@@ -38,6 +50,10 @@ export interface WebAuthnChallenge {
   challenge: string;
   type: string;
   expires_at: string;
+}
+
+function toCredential(row: PasskeyCredentialRow): PasskeyCredential {
+  return { ...row, backed_up: !!row.backed_up };
 }
 
 // Challenge management
@@ -83,27 +99,33 @@ function getAndDeleteChallenge(requestToken: string): string | null {
 // Credential management
 export function getCredentialsByUserId(userId: number): PasskeyCredential[] {
   const db = getDatabase();
-  return db
+  const rows = db
     .query(
       'SELECT * FROM passkey_credentials WHERE user_id = ? ORDER BY created_at DESC',
     )
-    .all(userId) as PasskeyCredential[];
+    .all(userId) as PasskeyCredentialRow[];
+  return rows.map(toCredential);
 }
 
 export function getCredentialById(
   credentialId: string,
 ): PasskeyCredential | null {
   const db = getDatabase();
-  return db
+  const row = db
     .query('SELECT * FROM passkey_credentials WHERE id = ?')
-    .get(credentialId) as PasskeyCredential | null;
+    .get(credentialId) as PasskeyCredentialRow | null;
+  return row ? toCredential(row) : null;
 }
 
-export function deleteCredential(credentialId: string): boolean {
+export function deleteCredential(
+  credentialId: string,
+  userId: number,
+): boolean {
   const db = getDatabase();
-  const result = db.run('DELETE FROM passkey_credentials WHERE id = ?', [
-    credentialId,
-  ]);
+  const result = db.run(
+    'DELETE FROM passkey_credentials WHERE id = ? AND user_id = ?',
+    [credentialId, userId],
+  );
   return result.changes > 0;
 }
 

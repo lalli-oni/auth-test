@@ -37,6 +37,7 @@ function closeTotpSetup() {
 async function verifyTotpSetup(event) {
   event.preventDefault();
   const code = document.getElementById('verify_code').value;
+  const errorEl = document.getElementById('totp-setup-error');
 
   try {
     const response = await fetch('/mfa/totp/enable', {
@@ -49,10 +50,12 @@ async function verifyTotpSetup(event) {
     if (data.success) {
       window.location.reload();
     } else {
-      console.error('[Dashboard] TOTP verification failed:', data.error);
+      errorEl.textContent = data.error || 'Invalid code. Please try again.';
+      errorEl.classList.remove('hidden');
     }
   } catch (err) {
-    console.error('[Dashboard] Error during TOTP verification:', err.message);
+    errorEl.textContent = `Error: ${err.message}`;
+    errorEl.classList.remove('hidden');
   }
 }
 
@@ -68,12 +71,17 @@ async function deletePasskey(credentialId) {
     if (data.success) {
       window.location.reload();
     } else {
-      console.error('[Dashboard] Failed to remove passkey:', data.error);
+      alert(`Failed to remove passkey: ${data.error}`);
     }
   } catch (err) {
-    console.error('[Dashboard] Error removing passkey:', err.message);
+    alert(`Error removing passkey: ${err.message}`);
   }
 }
+
+// Called from onclick attributes in dashboard.tsx
+window.showTotpSetup = showTotpSetup;
+window.closeTotpSetup = closeTotpSetup;
+window.deletePasskey = deletePasskey;
 
 document.addEventListener('DOMContentLoaded', () => {
   const verifyForm = document.getElementById('totp-verify-form');
