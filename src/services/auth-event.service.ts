@@ -33,7 +33,15 @@ export function serializeEvent(e: AuthEvent) {
     id: e.id,
     userId: e.user_id,
     eventType: e.event_type,
-    details: e.details ? JSON.parse(e.details) : null,
+    details: e.details
+      ? (() => {
+          try {
+            return JSON.parse(e.details);
+          } catch {
+            return e.details;
+          }
+        })()
+      : null,
     createdAt: e.created_at,
   };
 }
