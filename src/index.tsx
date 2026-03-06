@@ -66,7 +66,7 @@ app.get('/', (c) => {
 app.get('/login', (c) => c.redirect('/auth/login'));
 app.get('/register', (c) => c.redirect('/auth/register'));
 
-// Standalone passkey pages (auto-trigger WebAuthn on load)
+// Standalone passkey page (auto-trigger WebAuthn on load)
 app.get('/passkey-conditional', (c) =>
   c.html(<PasskeyPage mediation="conditional" />),
 );
