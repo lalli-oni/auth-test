@@ -29,6 +29,33 @@ export const FormGroup: FC<
   </div>
 );
 
+export const PasswordInput: FC<{
+  id: string;
+  name: string;
+  autocomplete: string;
+  required?: boolean;
+  minlength?: number;
+}> = ({ id, name, autocomplete, required, minlength }) => (
+  <div class="password-wrapper">
+    <input
+      type="password"
+      id={id}
+      name={name}
+      autocomplete={autocomplete}
+      required={required}
+      minlength={minlength}
+    />
+    <button
+      type="button"
+      class="password-toggle"
+      aria-label="Toggle password visibility"
+      data-target={id}
+    >
+      Show
+    </button>
+  </div>
+);
+
 export const OtpInput: FC<{
   id: string;
   name: string;
