@@ -1,5 +1,5 @@
 import type { FC } from 'hono/jsx';
-import { Alert, AuthCard, FormGroup } from '../components';
+import { Alert, AuthCard, FormGroup, PasswordInput } from '../components';
 import { Layout } from '../layout';
 
 export interface RegisterPageProps {
@@ -30,8 +30,7 @@ export const RegisterPage: FC<RegisterPageProps> = ({ error }) => (
         </FormGroup>
 
         <FormGroup label="Password" htmlFor="password">
-          <input
-            type="password"
+          <PasswordInput
             id="password"
             name="password"
             autocomplete="new-password"
@@ -41,8 +40,7 @@ export const RegisterPage: FC<RegisterPageProps> = ({ error }) => (
         </FormGroup>
 
         <FormGroup label="Confirm Password" htmlFor="confirm_password">
-          <input
-            type="password"
+          <PasswordInput
             id="confirm_password"
             name="confirm_password"
             autocomplete="new-password"
@@ -59,5 +57,6 @@ export const RegisterPage: FC<RegisterPageProps> = ({ error }) => (
         Already have an account? <a href="/login">Login</a>
       </p>
     </AuthCard>
+    <script src="/js/password-toggle.js" />
   </Layout>
 );
