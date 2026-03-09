@@ -32,7 +32,7 @@ export async function setupTotp(
   const otpauthUrl = generateURI({
     secret,
     issuer: 'AuthTestApp',
-    accountName: user.username,
+    label: user.username,
   });
 
   const qrCodeDataUrl = await QRCode.toDataURL(otpauthUrl);
