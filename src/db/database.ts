@@ -1,4 +1,5 @@
 import { Database } from 'bun:sqlite';
+import { existsSync, unlinkSync } from 'node:fs';
 import { initializeSchema } from './schema';
 
 let db: Database | null = null;
@@ -18,10 +19,8 @@ export function resetDatabase(): void {
     db = null;
   }
 
-  // Delete the database file
-  const fs = require('node:fs');
-  if (fs.existsSync('auth-test.db')) {
-    fs.unlinkSync('auth-test.db');
+  if (existsSync('auth-test.db')) {
+    unlinkSync('auth-test.db');
   }
 
   // Reinitialize

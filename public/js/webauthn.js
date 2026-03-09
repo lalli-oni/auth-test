@@ -192,17 +192,11 @@ const WebAuthnClient = {
 
       console.log('passkey verification response', verifyData);
       if (verifyData.success) {
-        if (verifyData.action === 'logged_in') {
-          console.log(
-            '[WebAuthnClient] Passkey authentication successful - action: logged_in',
-          );
-          window.location.href = '/dashboard';
-        } else if (verifyData.action === 'mfa_verified') {
-          console.log(
-            '[WebAuthnClient] Passkey authentication successful - action: mfa_verified',
-          );
-          window.location.href = '/dashboard';
-        }
+        console.log(
+          '[WebAuthnClient] Passkey authentication successful - action:',
+          verifyData.action,
+        );
+        window.location.href = '/dashboard';
       } else {
         console.error(
           '[WebAuthnClient] Passkey authentication failed - Status:',

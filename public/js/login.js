@@ -28,7 +28,7 @@
 
     try {
       const res = await fetch(
-        '/auth/mfa-status?username=' + encodeURIComponent(username),
+        `/auth/mfa-status?username=${encodeURIComponent(username)}`,
       );
       const data = await res.json();
 
@@ -41,8 +41,8 @@
         mfaCheckbox.checked = false;
         mfaLabel.title = TOOLTIP_NO_MFA;
       }
-    } catch (_e) {
-      // keep disabled on error
+    } catch (e) {
+      console.error('[Login] MFA status check failed:', e);
     }
   }
 

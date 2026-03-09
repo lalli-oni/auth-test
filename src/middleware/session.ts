@@ -1,4 +1,4 @@
-import type { Context, Next } from 'hono';
+import type { Context, MiddlewareHandler, Next } from 'hono';
 import { deleteCookie, getCookie, setCookie } from 'hono/cookie';
 import { getValidSession, type Session } from '../services/session.service';
 import { getUserById, type User } from '../services/user.service';
@@ -52,18 +52,12 @@ export function clearSessionCookie(c: Context): void {
   });
 }
 
-export function requireAuth(c: Context): Response | null {
-  const session = c.get('session');
-  const user = c.get('user');
-
-  if (!session || !user) {
-    return c.redirect('/login');
-  }
-
-  return null;
+export function getClientIP(c: Context): string | undefined {
+  return c.req.header('X-Forwarded-For') ?? c.req.header('X-Real-IP');
 }
 
-export function requireMfaVerified(c: Context): Response | null {
+// Middleware for HTML routes — redirects to /login on failure
+export const requireAuth: MiddlewareHandler = async (c, next) => {
   const session = c.get('session');
   const user = c.get('user');
 
@@ -71,10 +65,33 @@ export function requireMfaVerified(c: Context): Response | null {
     return c.redirect('/login');
   }
 
-  // Check if user has MFA enabled but session is not MFA verified
+  await next();
+};
+
+// Middleware for JSON API routes — returns 401 on failure
+export const requireAuthApi: MiddlewareHandler = async (c, next) => {
+  const session = c.get('session');
+  const user = c.get('user');
+
+  if (!session || !user) {
+    return c.json({ success: false, error: 'Not authenticated' }, 401);
+  }
+
+  await next();
+};
+
+// Middleware for routes that require completed MFA — redirects on failure
+export const requireMfaVerified: MiddlewareHandler = async (c, next) => {
+  const session = c.get('session');
+  const user = c.get('user');
+
+  if (!session || !user) {
+    return c.redirect('/login');
+  }
+
   if ((user.totp_enabled || user.email_mfa_enabled) && !session.mfa_verified) {
     return c.redirect('/mfa/verify');
   }
 
-  return null;
-}
+  await next();
+};

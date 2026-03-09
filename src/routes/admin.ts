@@ -1,11 +1,14 @@
+import type { Context } from 'hono';
 import { Hono } from 'hono';
 import { resetDatabase } from '../db/database';
 import {
   getAllAuthEvents,
   getAuthEventsByUserId,
+  serializeEvent,
 } from '../services/auth-event.service';
 import {
   createEmailCode,
+  type EmailCode,
   getActiveEmailCodes,
   getAllEmailCodes,
 } from '../services/email-code.service';
@@ -15,6 +18,7 @@ import {
   deleteSessionsByUserId,
   getAllSessions,
   getSessionsByUserId,
+  type Session,
 } from '../services/session.service';
 import { disableTotp, getCurrentTotpCode } from '../services/totp.service';
 import {
@@ -22,30 +26,74 @@ import {
   deleteUser,
   getAllUsers,
   getUserById,
+  type User,
   updatePassword,
   updateUser,
 } from '../services/user.service';
 import {
   deleteCredential,
   getCredentialsByUserId,
+  type PasskeyCredential,
 } from '../services/webauthn.service';
 
 const admin = new Hono();
 
+// --- Helpers ---
+
+function userNotFound(c: Context) {
+  return c.json({ success: false, error: 'User not found' }, 404);
+}
+
+function serializeUser(u: User) {
+  return {
+    id: u.id,
+    username: u.username,
+    email: u.email,
+    totpEnabled: u.totp_enabled,
+    emailMfaEnabled: u.email_mfa_enabled,
+    createdAt: u.created_at,
+  };
+}
+
+function serializeSession(s: Session) {
+  return {
+    id: s.id,
+    userId: s.user_id,
+    mfaVerified: s.mfa_verified,
+    expiresAt: s.expires_at,
+    userAgent: s.user_agent,
+    ipAddress: s.ip_address,
+    createdAt: s.created_at,
+  };
+}
+
+function serializePasskey(p: PasskeyCredential) {
+  return {
+    id: p.id,
+    friendlyName: p.friendly_name,
+    deviceType: p.device_type,
+    backedUp: p.backed_up,
+    counter: p.counter,
+    createdAt: p.created_at,
+  };
+}
+
+function serializeEmailCode(ec: EmailCode) {
+  return {
+    id: ec.id,
+    code: ec.code,
+    expiresAt: ec.expires_at,
+    used: ec.used,
+    createdAt: ec.created_at,
+  };
+}
+
+// --- Routes ---
+
 // List all users
 admin.get('/users', (c) => {
   const users = getAllUsers();
-  return c.json({
-    success: true,
-    users: users.map((u) => ({
-      id: u.id,
-      username: u.username,
-      email: u.email,
-      totpEnabled: !!u.totp_enabled,
-      emailMfaEnabled: !!u.email_mfa_enabled,
-      createdAt: u.created_at,
-    })),
-  });
+  return c.json({ success: true, users: users.map(serializeUser) });
 });
 
 // Create user
@@ -86,10 +134,7 @@ admin.post('/users', async (c) => {
 admin.get('/users/:id', (c) => {
   const id = parseInt(c.req.param('id'), 10);
   const user = getUserById(id);
-
-  if (!user) {
-    return c.json({ success: false, error: 'User not found' }, 404);
-  }
+  if (!user) return userNotFound(c);
 
   const sessions = getSessionsByUserId(id);
   const passkeys = getCredentialsByUserId(id);
@@ -99,54 +144,24 @@ admin.get('/users/:id', (c) => {
   return c.json({
     success: true,
     user: {
-      id: user.id,
-      username: user.username,
-      email: user.email,
-      totpEnabled: !!user.totp_enabled,
+      ...serializeUser(user),
       totpSecret: user.totp_secret,
-      emailMfaEnabled: !!user.email_mfa_enabled,
-      createdAt: user.created_at,
     },
-    sessions: sessions.map((s) => ({
-      id: s.id,
-      mfaVerified: !!s.mfa_verified,
-      expiresAt: s.expires_at,
-      userAgent: s.user_agent,
-      createdAt: s.created_at,
-    })),
-    passkeys: passkeys.map((p) => ({
-      id: p.id,
-      friendlyName: p.friendly_name,
-      deviceType: p.device_type,
-      backedUp: !!p.backed_up,
-      createdAt: p.created_at,
-    })),
-    emailCodes: emailCodes.map((ec) => ({
-      id: ec.id,
-      code: ec.code,
-      expiresAt: ec.expires_at,
-      used: !!ec.used,
-      createdAt: ec.created_at,
-    })),
-    recentEvents: events.map((e) => ({
-      id: e.id,
-      eventType: e.event_type,
-      details: e.details ? JSON.parse(e.details) : null,
-      createdAt: e.created_at,
-    })),
+    sessions: sessions.map(serializeSession),
+    passkeys: passkeys.map(serializePasskey),
+    emailCodes: emailCodes.map(serializeEmailCode),
+    recentEvents: events.map(serializeEvent),
   });
 });
 
 // Update user
 admin.patch('/users/:id', async (c) => {
   const id = parseInt(c.req.param('id'), 10);
+  const user = getUserById(id);
+  if (!user) return userNotFound(c);
+
   const body = await c.req.json();
   const { username, email, totpEnabled, emailMfaEnabled } = body;
-
-  const user = getUserById(id);
-  if (!user) {
-    return c.json({ success: false, error: 'User not found' }, 404);
-  }
 
   const updated = updateUser(id, {
     username,
@@ -155,16 +170,8 @@ admin.patch('/users/:id', async (c) => {
     email_mfa_enabled: emailMfaEnabled,
   });
 
-  return c.json({
-    success: true,
-    user: {
-      id: updated?.id,
-      username: updated?.username,
-      email: updated?.email,
-      totpEnabled: !!updated?.totp_enabled,
-      emailMfaEnabled: !!updated?.email_mfa_enabled,
-    },
-  });
+  if (!updated) return userNotFound(c);
+  return c.json({ success: true, user: serializeUser(updated) });
 });
 
 // Delete user
@@ -172,9 +179,7 @@ admin.delete('/users/:id', (c) => {
   const id = parseInt(c.req.param('id'), 10);
   const deleted = deleteUser(id);
 
-  if (!deleted) {
-    return c.json({ success: false, error: 'User not found' }, 404);
-  }
+  if (!deleted) return userNotFound(c);
 
   return c.json({ success: true });
 });
@@ -182,16 +187,14 @@ admin.delete('/users/:id', (c) => {
 // Reset password
 admin.post('/users/:id/reset-password', async (c) => {
   const id = parseInt(c.req.param('id'), 10);
+  const user = getUserById(id);
+  if (!user) return userNotFound(c);
+
   const body = await c.req.json();
   const { password } = body;
 
   if (!password) {
     return c.json({ success: false, error: 'Password is required' }, 400);
-  }
-
-  const user = getUserById(id);
-  if (!user) {
-    return c.json({ success: false, error: 'User not found' }, 404);
   }
 
   await updatePassword(id, password);
@@ -203,10 +206,7 @@ admin.post('/users/:id/reset-password', async (c) => {
 admin.get('/users/:id/totp/current', (c) => {
   const id = parseInt(c.req.param('id'), 10);
   const user = getUserById(id);
-
-  if (!user) {
-    return c.json({ success: false, error: 'User not found' }, 404);
-  }
+  if (!user) return userNotFound(c);
 
   if (!user.totp_secret) {
     return c.json({ success: false, error: 'TOTP not configured' }, 400);
@@ -221,7 +221,7 @@ admin.get('/users/:id/totp/current', (c) => {
     success: true,
     code: result.code,
     remainingSeconds: result.remainingSeconds,
-    totpEnabled: !!user.totp_enabled,
+    totpEnabled: user.totp_enabled,
   });
 });
 
@@ -229,10 +229,7 @@ admin.get('/users/:id/totp/current', (c) => {
 admin.delete('/users/:id/totp', (c) => {
   const id = parseInt(c.req.param('id'), 10);
   const user = getUserById(id);
-
-  if (!user) {
-    return c.json({ success: false, error: 'User not found' }, 404);
-  }
+  if (!user) return userNotFound(c);
 
   disableTotp(id);
 
@@ -243,10 +240,7 @@ admin.delete('/users/:id/totp', (c) => {
 admin.post('/users/:id/email-codes', (c) => {
   const id = parseInt(c.req.param('id'), 10);
   const user = getUserById(id);
-
-  if (!user) {
-    return c.json({ success: false, error: 'User not found' }, 404);
-  }
+  if (!user) return userNotFound(c);
 
   const code = createEmailCode(id);
 
@@ -264,21 +258,13 @@ admin.post('/users/:id/email-codes', (c) => {
 admin.get('/users/:id/email-codes', (c) => {
   const id = parseInt(c.req.param('id'), 10);
   const user = getUserById(id);
-
-  if (!user) {
-    return c.json({ success: false, error: 'User not found' }, 404);
-  }
+  if (!user) return userNotFound(c);
 
   const codes = getActiveEmailCodes(id);
 
   return c.json({
     success: true,
-    codes: codes.map((ec) => ({
-      id: ec.id,
-      code: ec.code,
-      expiresAt: ec.expires_at,
-      createdAt: ec.created_at,
-    })),
+    codes: codes.map(serializeEmailCode),
   });
 });
 
@@ -286,24 +272,11 @@ admin.get('/users/:id/email-codes', (c) => {
 admin.get('/users/:id/passkeys', (c) => {
   const id = parseInt(c.req.param('id'), 10);
   const user = getUserById(id);
-
-  if (!user) {
-    return c.json({ success: false, error: 'User not found' }, 404);
-  }
+  if (!user) return userNotFound(c);
 
   const passkeys = getCredentialsByUserId(id);
 
-  return c.json({
-    success: true,
-    passkeys: passkeys.map((p) => ({
-      id: p.id,
-      friendlyName: p.friendly_name,
-      deviceType: p.device_type,
-      backedUp: !!p.backed_up,
-      counter: p.counter,
-      createdAt: p.created_at,
-    })),
-  });
+  return c.json({ success: true, passkeys: passkeys.map(serializePasskey) });
 });
 
 // Delete passkey
@@ -312,11 +285,9 @@ admin.delete('/users/:id/passkeys/:credentialId', (c) => {
   const credentialId = c.req.param('credentialId');
 
   const user = getUserById(id);
-  if (!user) {
-    return c.json({ success: false, error: 'User not found' }, 404);
-  }
+  if (!user) return userNotFound(c);
 
-  const deleted = deleteCredential(credentialId);
+  const deleted = deleteCredential(credentialId, id);
   if (!deleted) {
     return c.json({ success: false, error: 'Passkey not found' }, 404);
   }
@@ -327,19 +298,7 @@ admin.delete('/users/:id/passkeys/:credentialId', (c) => {
 // List all sessions
 admin.get('/sessions', (c) => {
   const sessions = getAllSessions();
-
-  return c.json({
-    success: true,
-    sessions: sessions.map((s) => ({
-      id: s.id,
-      userId: s.user_id,
-      mfaVerified: !!s.mfa_verified,
-      expiresAt: s.expires_at,
-      userAgent: s.user_agent,
-      ipAddress: s.ip_address,
-      createdAt: s.created_at,
-    })),
-  });
+  return c.json({ success: true, sessions: sessions.map(serializeSession) });
 });
 
 // Delete session
@@ -372,16 +331,7 @@ admin.get('/events', (c) => {
   const limit = parseInt(c.req.query('limit') || '100', 10);
   const events = getAllAuthEvents(limit);
 
-  return c.json({
-    success: true,
-    events: events.map((e) => ({
-      id: e.id,
-      userId: e.user_id,
-      eventType: e.event_type,
-      details: e.details ? JSON.parse(e.details) : null,
-      createdAt: e.created_at,
-    })),
-  });
+  return c.json({ success: true, events: events.map(serializeEvent) });
 });
 
 // Reset database
