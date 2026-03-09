@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { requireAuth, requireAuthApi } from '../middleware/session';
 import { logAuthEvent } from '../services/auth-event.service';
 import {
   createEmailCode,
@@ -17,13 +18,9 @@ import { MfaVerifyPage } from '../views/pages/mfa-verify';
 const mfa = new Hono();
 
 // MFA verification page
-mfa.get('/verify', (c) => {
-  const session = c.get('session');
-  const user = c.get('user');
-
-  if (!session || !user) {
-    return c.redirect('/login');
-  }
+mfa.get('/verify', requireAuth, (c) => {
+  const session = c.get('session')!;
+  const user = c.get('user')!;
 
   if (session.mfa_verified) {
     return c.redirect('/dashboard');
@@ -39,13 +36,8 @@ mfa.get('/verify', (c) => {
 });
 
 // TOTP Setup (returns QR code)
-mfa.post('/totp/setup', async (c) => {
-  const session = c.get('session');
-  const user = c.get('user');
-
-  if (!session || !user) {
-    return c.json({ success: false, error: 'Not authenticated' }, 401);
-  }
+mfa.post('/totp/setup', requireAuthApi, async (c) => {
+  const user = c.get('user')!;
 
   const result = await setupTotp(user.id);
   if (!result) {
@@ -61,13 +53,8 @@ mfa.post('/totp/setup', async (c) => {
 });
 
 // TOTP Enable (verify initial code and enable)
-mfa.post('/totp/enable', async (c) => {
-  const session = c.get('session');
-  const user = c.get('user');
-
-  if (!session || !user) {
-    return c.json({ success: false, error: 'Not authenticated' }, 401);
-  }
+mfa.post('/totp/enable', requireAuthApi, async (c) => {
+  const user = c.get('user')!;
 
   const body = await c.req.json();
   const code = body.code as string;
@@ -87,13 +74,9 @@ mfa.post('/totp/enable', async (c) => {
 });
 
 // TOTP Verify (during login)
-mfa.post('/totp/verify', async (c) => {
-  const session = c.get('session');
-  const user = c.get('user');
-
-  if (!session || !user) {
-    return c.redirect('/login');
-  }
+mfa.post('/totp/verify', requireAuth, async (c) => {
+  const session = c.get('session')!;
+  const user = c.get('user')!;
 
   const body = await c.req.parseBody();
   const code = body.code as string;
@@ -115,13 +98,8 @@ mfa.post('/totp/verify', async (c) => {
 });
 
 // TOTP Disable
-mfa.post('/totp/disable', (c) => {
-  const session = c.get('session');
-  const user = c.get('user');
-
-  if (!session || !user) {
-    return c.redirect('/login');
-  }
+mfa.post('/totp/disable', requireAuth, (c) => {
+  const user = c.get('user')!;
 
   disableTotp(user.id);
   logAuthEvent('mfa_totp_disabled', user.id);
@@ -130,13 +108,8 @@ mfa.post('/totp/disable', (c) => {
 });
 
 // Email MFA Enable
-mfa.post('/email/enable', (c) => {
-  const session = c.get('session');
-  const user = c.get('user');
-
-  if (!session || !user) {
-    return c.redirect('/login');
-  }
+mfa.post('/email/enable', requireAuth, (c) => {
+  const user = c.get('user')!;
 
   updateUser(user.id, { email_mfa_enabled: true });
   logAuthEvent('mfa_email_enabled', user.id);
@@ -145,13 +118,8 @@ mfa.post('/email/enable', (c) => {
 });
 
 // Email MFA Disable
-mfa.post('/email/disable', (c) => {
-  const session = c.get('session');
-  const user = c.get('user');
-
-  if (!session || !user) {
-    return c.redirect('/login');
-  }
+mfa.post('/email/disable', requireAuth, (c) => {
+  const user = c.get('user')!;
 
   updateUser(user.id, { email_mfa_enabled: false });
   logAuthEvent('mfa_email_disabled', user.id);
@@ -160,36 +128,26 @@ mfa.post('/email/disable', (c) => {
 });
 
 // Email Code Send (simulated - code shown in admin panel)
-mfa.post('/email/send', (c) => {
-  const session = c.get('session');
-  const user = c.get('user');
-
-  if (!session || !user) {
-    return c.redirect('/login');
-  }
+mfa.post('/email/send', requireAuth, (c) => {
+  const user = c.get('user')!;
 
   const emailCode = createEmailCode(user.id);
   logAuthEvent('mfa_email_sent', user.id, { code: emailCode.code });
 
-  // In a real app, this would send an email
-  // For testing, the code is visible in the admin panel
-
+  // In a real app, this would send an email.
+  // For testing, the code is also visible in the admin panel.
   return c.html(
     <MfaVerifyPage
       user={user}
-      error={`Code sent! (For testing, check the admin panel - code: ${emailCode.code})`}
+      message={`Code sent! (For testing, code: ${emailCode.code})`}
     />,
   );
 });
 
 // Email Code Verify
-mfa.post('/email/verify', async (c) => {
-  const session = c.get('session');
-  const user = c.get('user');
-
-  if (!session || !user) {
-    return c.redirect('/login');
-  }
+mfa.post('/email/verify', requireAuth, async (c) => {
+  const session = c.get('session')!;
+  const user = c.get('user')!;
 
   const body = await c.req.parseBody();
   const code = body.code as string;
