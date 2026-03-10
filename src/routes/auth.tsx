@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import {
   clearSessionCookie,
   getClientIP,
+  requireMfaVerified,
   setSessionCookie,
 } from '../middleware/session';
 import { logAuthEvent } from '../services/auth-event.service';
@@ -9,8 +10,11 @@ import { createSession, deleteSession } from '../services/session.service';
 import {
   createUser,
   getUserByUsername,
+  updatePassword,
   verifyPassword,
 } from '../services/user.service';
+import type { ChangePasswordVariant } from '../views/pages/change-password';
+import { ChangePasswordPage } from '../views/pages/change-password';
 import { LoginPage } from '../views/pages/login';
 import { RegisterPage } from '../views/pages/register';
 
@@ -172,6 +176,68 @@ auth.get('/status', (c) => {
       expiresAt: session.expires_at,
     },
   });
+});
+
+// Change password page
+auth.get('/change-password', requireMfaVerified, (c) => {
+  const user = c.get('user')!;
+  const variant = c.req.query('variant') as ChangePasswordVariant | undefined;
+  return c.html(<ChangePasswordPage user={user} variant={variant} />);
+});
+
+// Change password handler
+auth.post('/change-password', requireMfaVerified, async (c) => {
+  const user = c.get('user')!;
+  const body = await c.req.parseBody();
+  const variant = body.variant as ChangePasswordVariant | undefined;
+  const currentPassword = body.current_password as string;
+  const newPassword = body.new_password as string;
+  const confirmNewPassword = body.confirm_new_password as string;
+  const stayOnPage = body.stay_on_page === '1';
+
+  const renderError = (error: string) =>
+    c.html(
+      <ChangePasswordPage
+        user={user}
+        variant={variant}
+        stayOnPage={stayOnPage}
+        error={error}
+      />,
+    );
+
+  if (!newPassword || newPassword.length < 6) {
+    return renderError('New password must be at least 6 characters');
+  }
+
+  if (variant !== 'no-current') {
+    if (!currentPassword) {
+      return renderError('Current password is required');
+    }
+    const valid = await verifyPassword(user, currentPassword);
+    if (!valid) {
+      return renderError('Current password is incorrect');
+    }
+  }
+
+  if (variant === 'with-confirmation' && newPassword !== confirmNewPassword) {
+    return renderError('New passwords do not match');
+  }
+
+  await updatePassword(user.id, newPassword);
+  logAuthEvent('password_changed', user.id);
+
+  if (stayOnPage) {
+    return c.html(
+      <ChangePasswordPage
+        user={user}
+        variant={variant}
+        stayOnPage={stayOnPage}
+        success="Password changed successfully"
+      />,
+    );
+  }
+
+  return c.redirect('/dashboard');
 });
 
 export default auth;
