@@ -578,5 +578,54 @@ document.addEventListener('click', (e) => {
   }
 });
 
+// Close admin modal (if open) or sidebar on Escape — modal takes priority
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    const modal = document.getElementById('admin-modal');
+    if (modal && !modal.classList.contains('hidden')) {
+      AdminPanel.closeModal();
+    } else {
+      document.body.classList.remove('admin-open');
+    }
+  }
+});
+
+// Sidebar resize handle (uses pointer capture so drag events stay on the handle)
+(() => {
+  const handle = document.querySelector('.admin-resize-handle');
+  if (!handle) return;
+
+  const styles = getComputedStyle(document.documentElement);
+  const minWidth = Number.parseInt(
+    styles.getPropertyValue('--sidebar-min-width'),
+    10,
+  );
+
+  handle.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    handle.setPointerCapture(e.pointerId);
+    handle.classList.add('dragging');
+    document.body.style.userSelect = 'none';
+
+    const onPointerMove = (e) => {
+      const width = Math.max(minWidth, e.clientX);
+      document.documentElement.style.setProperty(
+        '--sidebar-width',
+        `${width}px`,
+      );
+    };
+
+    const onPointerUp = () => {
+      handle.classList.remove('dragging');
+      document.body.style.userSelect = '';
+      handle.removeEventListener('pointermove', onPointerMove);
+      handle.removeEventListener('pointerup', onPointerUp);
+    };
+
+    handle.addEventListener('pointermove', onPointerMove);
+    handle.addEventListener('pointerup', onPointerUp);
+  });
+})();
+
 // Make it globally available
 window.AdminPanel = AdminPanel;

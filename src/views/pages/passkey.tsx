@@ -8,7 +8,7 @@ export interface PasskeyPageProps {
 export const PasskeyPage: FC<PasskeyPageProps> = ({ mediation }) => {
   const onclickArg = mediation ? `'${mediation}'` : 'undefined';
   return (
-    <Layout title="Passkey Authentication" showAdminPanel={false}>
+    <Layout title="Passkey Authentication">
       <div class="auth-form-container">
         <h2>Passkey Authentication</h2>
         <p>
