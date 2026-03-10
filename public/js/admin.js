@@ -578,7 +578,7 @@ document.addEventListener('click', (e) => {
   }
 });
 
-// Close admin modal or sidebar on Escape
+// Close admin modal (if open) or sidebar on Escape — modal takes priority
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     const modal = document.getElementById('admin-modal');
@@ -590,10 +590,16 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// Sidebar resize handle (pointer capture prevents drag state leak)
+// Sidebar resize handle (uses pointer capture so drag events stay on the handle)
 (() => {
   const handle = document.querySelector('.admin-resize-handle');
   if (!handle) return;
+
+  const styles = getComputedStyle(document.documentElement);
+  const minWidth = Number.parseInt(
+    styles.getPropertyValue('--sidebar-min-width'),
+    10,
+  );
 
   handle.addEventListener('pointerdown', (e) => {
     e.preventDefault();
@@ -602,7 +608,7 @@ document.addEventListener('keydown', (e) => {
     document.body.style.userSelect = 'none';
 
     const onPointerMove = (e) => {
-      const width = Math.max(200, e.clientX);
+      const width = Math.max(minWidth, e.clientX);
       document.documentElement.style.setProperty(
         '--sidebar-width',
         `${width}px`,

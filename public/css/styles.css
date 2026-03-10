@@ -23,6 +23,7 @@
   --gray-800: #1f2937;
   --gray-900: #111827;
   --sidebar-width: 320px;
+  --sidebar-min-width: 200px;
 }
 
 body {
@@ -518,7 +519,7 @@ body {
 /* Admin Sidebar */
 .admin-sidebar {
   width: var(--sidebar-width);
-  min-width: 200px;
+  min-width: var(--sidebar-min-width);
   background: var(--gray-800);
   color: white;
   padding: 1.5rem;
@@ -643,7 +644,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1001;
+  z-index: 1002;
 }
 
 .admin-modal.hidden {
@@ -852,7 +853,7 @@ body {
     border: none;
     font-size: 1.25rem;
     cursor: pointer;
-    z-index: 999;
+    z-index: 1001;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     transition: left 0.25s ease;
   }
@@ -863,7 +864,6 @@ body {
 
   body.admin-open .admin-toggle-btn {
     left: calc(var(--sidebar-width) + 1.5rem);
-    z-index: 1001;
   }
 
   .admin-resize-handle {
