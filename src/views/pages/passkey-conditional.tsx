@@ -20,7 +20,8 @@ export const PasskeyConditionalPage: FC = () => (
         </button>
       </div>
 
-      <script src="/js/passkey-conditional.js" />
+      <div id="passkey-config" data-mediation="conditional" />
+      <script src="/js/passkey-auto.js" />
     </div>
   </Layout>
 );
