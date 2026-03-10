@@ -2,7 +2,7 @@ import type { FC } from 'hono/jsx';
 import { Layout } from '../layout';
 
 export const PasskeyConditionalPage: FC = () => (
-  <Layout title="Passkey Authentication (Conditional)" showAdminPanel={false}>
+  <Layout title="Passkey Authentication (Conditional)">
     <div class="auth-form-container">
       <h2>Passkey Authentication</h2>
       <p>
@@ -20,7 +20,8 @@ export const PasskeyConditionalPage: FC = () => (
         </button>
       </div>
 
-      <script src="/js/passkey-conditional.js" />
+      <div id="passkey-config" data-mediation="conditional" />
+      <script src="/js/passkey-auto.js" />
     </div>
   </Layout>
 );

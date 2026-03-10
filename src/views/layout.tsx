@@ -4,7 +4,6 @@ import type { User } from '../services/user.service';
 export interface LayoutProps {
   title: string;
   user?: User | null;
-  showAdminPanel?: boolean;
 }
 
 const AdminSidebar: FC = () => (
@@ -68,7 +67,6 @@ const AdminSidebar: FC = () => (
 export const Layout: FC<PropsWithChildren<LayoutProps>> = ({
   title,
   user,
-  showAdminPanel = true,
   children,
 }) => (
   <html lang="en">
@@ -79,7 +77,21 @@ export const Layout: FC<PropsWithChildren<LayoutProps>> = ({
       <link rel="stylesheet" href="/css/styles.css" />
     </head>
     <body>
+      <button
+        type="button"
+        class="admin-toggle-btn"
+        onclick="document.body.classList.toggle('admin-open')"
+        aria-label="Toggle admin panel"
+      >
+        &#9881;
+      </button>
+      <div
+        class="admin-overlay"
+        onclick="document.body.classList.remove('admin-open')"
+      />
       <div class="app-container">
+        <AdminSidebar />
+        <div class="admin-resize-handle" />
         <main class="main-content">
           <header class="header">
             <h1>
@@ -110,7 +122,6 @@ export const Layout: FC<PropsWithChildren<LayoutProps>> = ({
           </header>
           <div class="content">{children}</div>
         </main>
-        {showAdminPanel && <AdminSidebar />}
       </div>
       <script src="/js/webauthn.js"></script>
       <script src="/js/admin.js"></script>

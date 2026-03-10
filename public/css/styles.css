@@ -23,6 +23,7 @@
   --gray-800: #1f2937;
   --gray-900: #111827;
   --sidebar-width: 320px;
+  --sidebar-min-width: 200px;
 }
 
 body {
@@ -518,6 +519,7 @@ body {
 /* Admin Sidebar */
 .admin-sidebar {
   width: var(--sidebar-width);
+  min-width: var(--sidebar-min-width);
   background: var(--gray-800);
   color: white;
   padding: 1.5rem;
@@ -525,6 +527,18 @@ body {
   height: 100vh;
   position: sticky;
   top: 0;
+}
+
+.admin-resize-handle {
+  width: 4px;
+  cursor: col-resize;
+  background: transparent;
+  flex-shrink: 0;
+}
+
+.admin-resize-handle:hover,
+.admin-resize-handle.dragging {
+  background: var(--primary-color);
 }
 
 .admin-sidebar h2 {
@@ -630,7 +644,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1001;
+  z-index: 1002;
 }
 
 .admin-modal.hidden {
@@ -795,6 +809,15 @@ body {
   border-radius: 0 0 0.375rem 0.375rem;
 }
 
+/* Admin toggle button & overlay - hidden on desktop */
+.admin-toggle-btn {
+  display: none;
+}
+
+.admin-overlay {
+  display: none;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
   .main-content {
@@ -802,6 +825,59 @@ body {
   }
 
   .admin-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 1000;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+  }
+
+  body.admin-open .admin-sidebar {
+    transform: translateX(0);
+  }
+
+  .admin-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    bottom: 1.5rem;
+    left: 1.5rem;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--gray-800);
+    color: white;
+    border: none;
+    font-size: 1.25rem;
+    cursor: pointer;
+    z-index: 1001;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    transition: left 0.25s ease;
+  }
+
+  .admin-toggle-btn:hover {
+    background: var(--gray-700);
+  }
+
+  body.admin-open .admin-toggle-btn {
+    left: calc(var(--sidebar-width) + 1.5rem);
+  }
+
+  .admin-resize-handle {
     display: none;
+  }
+
+  body.admin-open .admin-overlay {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 999;
   }
 }
