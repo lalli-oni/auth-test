@@ -578,5 +578,48 @@ document.addEventListener('click', (e) => {
   }
 });
 
+// Close admin modal or sidebar on Escape
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    const modal = document.getElementById('admin-modal');
+    if (modal && !modal.classList.contains('hidden')) {
+      AdminPanel.closeModal();
+    } else {
+      document.body.classList.remove('admin-open');
+    }
+  }
+});
+
+// Sidebar resize handle (pointer capture prevents drag state leak)
+(() => {
+  const handle = document.querySelector('.admin-resize-handle');
+  if (!handle) return;
+
+  handle.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    handle.setPointerCapture(e.pointerId);
+    handle.classList.add('dragging');
+    document.body.style.userSelect = 'none';
+
+    const onPointerMove = (e) => {
+      const width = Math.max(200, e.clientX);
+      document.documentElement.style.setProperty(
+        '--sidebar-width',
+        `${width}px`,
+      );
+    };
+
+    const onPointerUp = () => {
+      handle.classList.remove('dragging');
+      document.body.style.userSelect = '';
+      handle.removeEventListener('pointermove', onPointerMove);
+      handle.removeEventListener('pointerup', onPointerUp);
+    };
+
+    handle.addEventListener('pointermove', onPointerMove);
+    handle.addEventListener('pointerup', onPointerUp);
+  });
+})();
+
 // Make it globally available
 window.AdminPanel = AdminPanel;
