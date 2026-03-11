@@ -88,4 +88,25 @@ document.addEventListener('DOMContentLoaded', () => {
   if (verifyForm) {
     verifyForm.addEventListener('submit', verifyTotpSetup);
   }
+
+  // Combo button dropdown toggle
+  document.querySelectorAll('.combo-btn-toggle').forEach((toggle) => {
+    toggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const comboBtn = toggle.closest('.combo-btn');
+      document.querySelectorAll('.combo-btn.open').forEach((btn) => {
+        if (btn !== comboBtn) btn.classList.remove('open');
+      });
+      comboBtn.classList.toggle('open');
+    });
+  });
+
+  // Close combo button dropdown when clicking outside
+  document.addEventListener('click', (e) => {
+    document.querySelectorAll('.combo-btn.open').forEach((btn) => {
+      if (!btn.contains(e.target)) {
+        btn.classList.remove('open');
+      }
+    });
+  });
 });
