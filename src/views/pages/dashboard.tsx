@@ -2,7 +2,7 @@ import type { FC } from 'hono/jsx';
 import type { Session } from '../../services/session.service';
 import type { User } from '../../services/user.service';
 import type { PasskeyCredential } from '../../services/webauthn.service';
-import { Alert } from '../components';
+import { Alert, VariantPicker } from '../components';
 import { Layout } from '../layout';
 
 export interface DashboardPageProps {
@@ -129,29 +129,31 @@ export const DashboardPage: FC<DashboardPageProps> = ({
             <p>Change your account password.</p>
           </div>
           <div class="security-option-actions">
-            <label class="checkbox-label">
-              <input
-                type="checkbox"
-                id="cp-no-current"
-                data-cp-option="no_current"
-              />
-              Skip current password
-            </label>
-            <label class="checkbox-label">
-              <input
-                type="checkbox"
-                id="cp-with-confirmation"
-                data-cp-option="with_confirmation"
-              />
-              Require confirmation
-            </label>
-            <a
-              id="change-password-link"
-              href="/auth/change-password"
-              class="btn btn-primary btn-small"
-            >
-              Change Password
-            </a>
+            <VariantPicker>
+              <label class="checkbox-label">
+                <input
+                  type="checkbox"
+                  id="cp-no-current"
+                  data-cp-option="no_current"
+                />
+                Skip current password
+              </label>
+              <label class="checkbox-label">
+                <input
+                  type="checkbox"
+                  id="cp-with-confirmation"
+                  data-cp-option="with_confirmation"
+                />
+                Require confirmation
+              </label>
+              <a
+                id="change-password-link"
+                href="/auth/change-password"
+                class="btn btn-primary btn-small"
+              >
+                Change Password
+              </a>
+            </VariantPicker>
           </div>
         </div>
       </div>
