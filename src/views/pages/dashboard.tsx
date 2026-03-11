@@ -7,12 +7,12 @@ import { Alert, VariantPicker } from '../components';
 import { Layout } from '../layout';
 
 const changePasswordCheckboxes = getVariantsByFlow('change-password').filter(
-  (v) => v.type === 'checkbox' && v.id !== 'change-password.stay-on-page',
+  (v) => v.type === 'checkbox' && v.id !== 'stay-on-page',
 );
 
 const cpOptionMap: Record<string, string> = {
-  'change-password.skip-current': 'no_current',
-  'change-password.require-confirmation': 'with_confirmation',
+  'skip-current': 'no_current',
+  'require-confirmation': 'with_confirmation',
 };
 
 export interface DashboardPageProps {

@@ -35,8 +35,15 @@ auth.post('/login', async (c) => {
   const username = body.username as string;
   const password = body.password as string;
 
+  const stayOnPage = body.stay_on_page === '1';
+
   if (!username || !password) {
-    return c.html(<LoginPage error="Username and password are required" />);
+    return c.html(
+      <LoginPage
+        error="Username and password are required"
+        stayOnPage={stayOnPage}
+      />,
+    );
   }
 
   const user = getUserByUsername(username);
@@ -45,13 +52,23 @@ auth.post('/login', async (c) => {
       username,
       reason: 'user_not_found',
     });
-    return c.html(<LoginPage error="Invalid username or password" />);
+    return c.html(
+      <LoginPage
+        error="Invalid username or password"
+        stayOnPage={stayOnPage}
+      />,
+    );
   }
 
   const validPassword = await verifyPassword(user, password);
   if (!validPassword) {
     logAuthEvent('login_failed', user.id, { reason: 'invalid_password' });
-    return c.html(<LoginPage error="Invalid username or password" />);
+    return c.html(
+      <LoginPage
+        error="Invalid username or password"
+        stayOnPage={stayOnPage}
+      />,
+    );
   }
 
   const hasMfa = user.totp_enabled || user.email_mfa_enabled;
@@ -70,6 +87,12 @@ auth.post('/login', async (c) => {
 
   if (wants2fa && hasMfa) {
     return c.redirect('/mfa/verify');
+  }
+
+  if (stayOnPage) {
+    return c.html(
+      <LoginPage success="Logged in successfully" stayOnPage={stayOnPage} />,
+    );
   }
 
   return c.redirect('/dashboard');
@@ -91,18 +114,28 @@ auth.post('/register', async (c) => {
   const email = body.email as string | undefined;
   const password = body.password as string;
   const confirmPassword = body.confirm_password as string;
+  const stayOnPage = body.stay_on_page === '1';
 
   if (!username || !password) {
-    return c.html(<RegisterPage error="Username and password are required" />);
+    return c.html(
+      <RegisterPage
+        error="Username and password are required"
+        stayOnPage={stayOnPage}
+      />,
+    );
   }
 
   if (password !== confirmPassword) {
-    return c.html(<RegisterPage error="Passwords do not match" />);
+    return c.html(
+      <RegisterPage error="Passwords do not match" stayOnPage={stayOnPage} />,
+    );
   }
 
   const existingUser = getUserByUsername(username);
   if (existingUser) {
-    return c.html(<RegisterPage error="Username already taken" />);
+    return c.html(
+      <RegisterPage error="Username already taken" stayOnPage={stayOnPage} />,
+    );
   }
 
   try {
@@ -119,13 +152,22 @@ auth.post('/register', async (c) => {
 
     setSessionCookie(c, session.id);
 
+    if (stayOnPage) {
+      return c.html(
+        <RegisterPage
+          success="Account created successfully"
+          stayOnPage={stayOnPage}
+        />,
+      );
+    }
+
     return c.redirect('/dashboard');
   } catch (error) {
     const message =
       error instanceof Error
         ? error.message
         : 'Failed to create account. Please try again.';
-    return c.html(<RegisterPage error={message} />);
+    return c.html(<RegisterPage error={message} stayOnPage={stayOnPage} />);
   }
 });
 

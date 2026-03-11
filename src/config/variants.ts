@@ -9,7 +9,7 @@ export interface Variant {
 
 export const VARIANTS: Variant[] = [
   {
-    id: 'passkey-mediation.conditional',
+    id: 'conditional',
     label: 'Conditional',
     description:
       'Uses conditional mediation UI - browser shows passkey if available',
@@ -18,7 +18,7 @@ export const VARIANTS: Variant[] = [
     group: 'passkey-mediation',
   },
   {
-    id: 'passkey-mediation.conditional-page',
+    id: 'conditional-page',
     label: 'New page (conditional)',
     description:
       'Navigates to a dedicated page with conditional mediation auto-trigger',
@@ -27,7 +27,7 @@ export const VARIANTS: Variant[] = [
     group: 'passkey-mediation',
   },
   {
-    id: 'passkey-mediation.undefined',
+    id: 'undefined',
     label: 'undefined',
     description: 'Passes undefined as mediation parameter (browser default)',
     type: 'combo-option',
@@ -35,7 +35,7 @@ export const VARIANTS: Variant[] = [
     group: 'passkey-mediation',
   },
   {
-    id: 'passkey-mediation.optional',
+    id: 'optional',
     label: 'Optional',
     description: 'Uses optional mediation mode',
     type: 'combo-option',
@@ -43,7 +43,7 @@ export const VARIANTS: Variant[] = [
     group: 'passkey-mediation',
   },
   {
-    id: 'passkey-mediation.required',
+    id: 'required',
     label: 'Required',
     description: 'Uses required mediation mode',
     type: 'combo-option',
@@ -51,7 +51,7 @@ export const VARIANTS: Variant[] = [
     group: 'passkey-mediation',
   },
   {
-    id: 'passkey-mediation.silent',
+    id: 'silent',
     label: 'Silent',
     description: 'Uses silent mediation mode',
     type: 'combo-option',
@@ -59,14 +59,14 @@ export const VARIANTS: Variant[] = [
     group: 'passkey-mediation',
   },
   {
-    id: 'login.require-2fa',
+    id: 'require-2fa',
     label: 'Login with 2FA',
     description: 'Require two-factor authentication during login',
     type: 'checkbox',
     flows: ['login'],
   },
   {
-    id: 'change-password.skip-current',
+    id: 'skip-current',
     label: 'Skip current password',
     description: 'Allow changing password without entering current password',
     type: 'checkbox',
@@ -74,7 +74,7 @@ export const VARIANTS: Variant[] = [
     group: 'change-password',
   },
   {
-    id: 'change-password.require-confirmation',
+    id: 'require-confirmation',
     label: 'Require confirmation',
     description: 'Require typing the new password twice',
     type: 'checkbox',
@@ -82,12 +82,12 @@ export const VARIANTS: Variant[] = [
     group: 'change-password',
   },
   {
-    id: 'change-password.stay-on-page',
+    id: 'stay-on-page',
     label: 'Stay on page after success',
-    description: 'Remain on the change password page after a successful change',
+    description:
+      'Re-render the current page with a success message instead of redirecting',
     type: 'checkbox',
-    flows: ['change-password'],
-    group: 'change-password',
+    flows: ['login', 'register', 'change-password'],
   },
 ];
 
