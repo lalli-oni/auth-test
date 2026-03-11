@@ -213,7 +213,14 @@ auth.post('/change-password', requireMfaVerified, async (c) => {
     if (!currentPassword) {
       return renderError('Current password is required');
     }
-    const valid = await verifyPassword(user, currentPassword);
+    let valid: boolean;
+    try {
+      valid = await verifyPassword(user, currentPassword);
+    } catch {
+      return renderError(
+        'Unable to verify current password. Please try again.',
+      );
+    }
     if (!valid) {
       return renderError('Current password is incorrect');
     }
@@ -223,7 +230,16 @@ auth.post('/change-password', requireMfaVerified, async (c) => {
     return renderError('New passwords do not match');
   }
 
-  await updatePassword(user.id, newPassword);
+  try {
+    await updatePassword(user.id, newPassword);
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : 'Failed to change password. Please try again.';
+    return renderError(message);
+  }
+
   logAuthEvent('password_changed', user.id);
 
   if (stayOnPage) {
