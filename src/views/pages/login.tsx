@@ -1,6 +1,20 @@
 import type { FC } from 'hono/jsx';
+import { getVariantsByGroup } from '../../config/variants';
 import { Alert, AuthCard, ComboButton, FormGroup } from '../components';
 import { Layout } from '../layout';
+
+const passkeyMediationVariants = getVariantsByGroup('passkey-mediation');
+const primaryPasskey = passkeyMediationVariants[0]!;
+const secondaryPasskeys = passkeyMediationVariants.slice(1);
+
+function passkeyOnclick(variantId: string): string {
+  if (variantId === 'passkey-mediation.conditional-page') {
+    return "window.location.href='/passkey-conditional'";
+  }
+  const mediation = variantId.split('.')[1];
+  const arg = mediation === 'undefined' ? 'undefined' : `'${mediation}'`;
+  return `WebAuthnClient.loginWithPasskey(${arg})`;
+}
 
 export interface LoginPageProps {
   error?: string;
@@ -60,40 +74,15 @@ export const LoginPage: FC<LoginPageProps> = ({ error, success }) => (
       </div>
 
       <ComboButton
-        primaryLabel="Login with Passkey (conditional)"
-        primaryOnclick="WebAuthnClient.loginWithPasskey('conditional')"
+        primaryLabel={`Login with Passkey (${primaryPasskey.label.toLowerCase()})`}
+        primaryOnclick={passkeyOnclick(primaryPasskey.id)}
         btnStyle="btn-secondary"
       >
-        <button
-          type="button"
-          onclick="window.location.href='/passkey-conditional'"
-        >
-          New page (conditional)
-        </button>
-        <button
-          type="button"
-          onclick="WebAuthnClient.loginWithPasskey(undefined)"
-        >
-          undefined
-        </button>
-        <button
-          type="button"
-          onclick="WebAuthnClient.loginWithPasskey('optional')"
-        >
-          Optional
-        </button>
-        <button
-          type="button"
-          onclick="WebAuthnClient.loginWithPasskey('required')"
-        >
-          Required
-        </button>
-        <button
-          type="button"
-          onclick="WebAuthnClient.loginWithPasskey('silent')"
-        >
-          Silent
-        </button>
+        {secondaryPasskeys.map((v) => (
+          <button type="button" onclick={passkeyOnclick(v.id)}>
+            {v.label}
+          </button>
+        ))}
       </ComboButton>
 
       <p class="auth-link">

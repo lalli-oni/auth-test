@@ -1,9 +1,19 @@
 import type { FC } from 'hono/jsx';
+import { getVariantsByFlow } from '../../config/variants';
 import type { Session } from '../../services/session.service';
 import type { User } from '../../services/user.service';
 import type { PasskeyCredential } from '../../services/webauthn.service';
 import { Alert, VariantPicker } from '../components';
 import { Layout } from '../layout';
+
+const changePasswordCheckboxes = getVariantsByFlow('change-password').filter(
+  (v) => v.type === 'checkbox' && v.id !== 'change-password.stay-on-page',
+);
+
+const cpOptionMap: Record<string, string> = {
+  'change-password.skip-current': 'no_current',
+  'change-password.require-confirmation': 'with_confirmation',
+};
 
 export interface DashboardPageProps {
   user: User;
@@ -130,22 +140,12 @@ export const DashboardPage: FC<DashboardPageProps> = ({
           </div>
           <div class="security-option-actions">
             <VariantPicker>
-              <label class="checkbox-label">
-                <input
-                  type="checkbox"
-                  id="cp-no-current"
-                  data-cp-option="no_current"
-                />
-                Skip current password
-              </label>
-              <label class="checkbox-label">
-                <input
-                  type="checkbox"
-                  id="cp-with-confirmation"
-                  data-cp-option="with_confirmation"
-                />
-                Require confirmation
-              </label>
+              {changePasswordCheckboxes.map((v) => (
+                <label class="checkbox-label">
+                  <input type="checkbox" data-cp-option={cpOptionMap[v.id]} />
+                  {v.label}
+                </label>
+              ))}
               <a
                 id="change-password-link"
                 href="/auth/change-password"
