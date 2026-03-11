@@ -730,6 +730,11 @@ body {
   color: var(--gray-400);
 }
 
+.btn-copy {
+  margin-left: 0.375rem;
+  vertical-align: middle;
+}
+
 .admin-totp-display {
   background: var(--gray-700);
   padding: 1rem;
