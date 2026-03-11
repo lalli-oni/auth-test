@@ -4,12 +4,18 @@ import { Layout } from '../layout';
 
 export interface RegisterPageProps {
   error?: string;
+  success?: string;
+  stayOnPage?: boolean;
 }
 
-export const RegisterPage: FC<RegisterPageProps> = ({ error }) => (
+export const RegisterPage: FC<RegisterPageProps> = ({
+  error,
+  success,
+  stayOnPage,
+}) => (
   <Layout title="Register">
     <AuthCard title="Create Account">
-      <Alert error={error} />
+      <Alert error={error} success={success} />
 
       <form action="/auth/register" method="post" class="auth-form">
         <FormGroup label="Username" htmlFor="username">
@@ -47,6 +53,18 @@ export const RegisterPage: FC<RegisterPageProps> = ({ error }) => (
             required
           />
         </FormGroup>
+
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input
+              type="checkbox"
+              name="stay_on_page"
+              value="1"
+              checked={stayOnPage}
+            />
+            Stay on page after success
+          </label>
+        </div>
 
         <button type="submit" class="btn btn-primary">
           Create Account

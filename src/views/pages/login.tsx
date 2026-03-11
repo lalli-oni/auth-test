@@ -8,20 +8,24 @@ const primaryPasskey = passkeyMediationVariants[0]!;
 const secondaryPasskeys = passkeyMediationVariants.slice(1);
 
 function passkeyOnclick(variantId: string): string {
-  if (variantId === 'passkey-mediation.conditional-page') {
+  if (variantId === 'conditional-page') {
     return "window.location.href='/passkey-conditional'";
   }
-  const mediation = variantId.split('.')[1];
-  const arg = mediation === 'undefined' ? 'undefined' : `'${mediation}'`;
+  const arg = variantId === 'undefined' ? 'undefined' : `'${variantId}'`;
   return `WebAuthnClient.loginWithPasskey(${arg})`;
 }
 
 export interface LoginPageProps {
   error?: string;
   success?: string;
+  stayOnPage?: boolean;
 }
 
-export const LoginPage: FC<LoginPageProps> = ({ error, success }) => (
+export const LoginPage: FC<LoginPageProps> = ({
+  error,
+  success,
+  stayOnPage,
+}) => (
   <Layout title="Login">
     <AuthCard title="Login">
       <Alert error={error} success={success} />
@@ -61,6 +65,18 @@ export const LoginPage: FC<LoginPageProps> = ({ error, success }) => (
               disabled
             />{' '}
             Login with 2FA
+          </label>
+        </div>
+
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input
+              type="checkbox"
+              name="stay_on_page"
+              value="1"
+              checked={stayOnPage}
+            />
+            Stay on page after success
           </label>
         </div>
 
