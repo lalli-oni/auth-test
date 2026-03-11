@@ -26,7 +26,8 @@ export type AuthEventType =
   | 'passkey_registered'
   | 'passkey_deleted'
   | 'passkey_auth_success'
-  | 'passkey_auth_failed';
+  | 'passkey_auth_failed'
+  | 'password_changed';
 
 export function serializeEvent(e: AuthEvent) {
   return {
