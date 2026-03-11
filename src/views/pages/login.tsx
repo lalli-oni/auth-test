@@ -1,5 +1,5 @@
 import type { FC } from 'hono/jsx';
-import { Alert, AuthCard, FormGroup } from '../components';
+import { Alert, AuthCard, ComboButton, FormGroup } from '../components';
 import { Layout } from '../layout';
 
 export interface LoginPageProps {
@@ -59,54 +59,42 @@ export const LoginPage: FC<LoginPageProps> = ({ error, success }) => (
         <span>or</span>
       </div>
 
-      <div class="combo-btn">
+      <ComboButton
+        primaryLabel="Login with Passkey (conditional)"
+        primaryOnclick="WebAuthnClient.loginWithPasskey('conditional')"
+        btnStyle="btn-secondary"
+      >
         <button
           type="button"
-          onclick="WebAuthnClient.loginWithPasskey('conditional')"
-          class="btn btn-secondary combo-btn-main"
+          onclick="window.location.href='/passkey-conditional'"
         >
-          Login with Passkey (conditional)
+          New page (conditional)
         </button>
         <button
           type="button"
-          class="btn btn-secondary combo-btn-toggle"
-          onclick="this.parentElement.classList.toggle('open')"
+          onclick="WebAuthnClient.loginWithPasskey(undefined)"
         >
-          &#9662;
+          undefined
         </button>
-        <div class="combo-btn-dropdown">
-          <button
-            type="button"
-            onclick="window.location.href='/passkey-conditional'"
-          >
-            New page (conditional)
-          </button>
-          <button
-            type="button"
-            onclick="WebAuthnClient.loginWithPasskey(undefined)"
-          >
-            undefined
-          </button>
-          <button
-            type="button"
-            onclick="WebAuthnClient.loginWithPasskey('optional')"
-          >
-            Optional
-          </button>
-          <button
-            type="button"
-            onclick="WebAuthnClient.loginWithPasskey('required')"
-          >
-            Required
-          </button>
-          <button
-            type="button"
-            onclick="WebAuthnClient.loginWithPasskey('silent')"
-          >
-            Silent
-          </button>
-        </div>
-      </div>
+        <button
+          type="button"
+          onclick="WebAuthnClient.loginWithPasskey('optional')"
+        >
+          Optional
+        </button>
+        <button
+          type="button"
+          onclick="WebAuthnClient.loginWithPasskey('required')"
+        >
+          Required
+        </button>
+        <button
+          type="button"
+          onclick="WebAuthnClient.loginWithPasskey('silent')"
+        >
+          Silent
+        </button>
+      </ComboButton>
 
       <p class="auth-link">
         Don't have an account? <a href="/register">Register</a>

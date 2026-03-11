@@ -56,6 +56,45 @@ export const PasswordInput: FC<{
   </div>
 );
 
+export const ComboButton: FC<
+  PropsWithChildren<{
+    primaryLabel: string;
+    primaryHref?: string;
+    primaryOnclick?: string;
+    btnStyle?: string;
+  }>
+> = ({
+  primaryLabel,
+  primaryHref,
+  primaryOnclick,
+  btnStyle = 'btn-primary',
+  children,
+}) => (
+  <div class="combo-btn">
+    {primaryHref ? (
+      <a href={primaryHref} class={`btn ${btnStyle} combo-btn-main`}>
+        {primaryLabel}
+      </a>
+    ) : (
+      <button
+        type="button"
+        onclick={primaryOnclick}
+        class={`btn ${btnStyle} combo-btn-main`}
+      >
+        {primaryLabel}
+      </button>
+    )}
+    <button
+      type="button"
+      class={`btn ${btnStyle} combo-btn-toggle`}
+      onclick="this.parentElement.classList.toggle('open')"
+    >
+      &#9662;
+    </button>
+    <div class="combo-btn-dropdown">{children}</div>
+  </div>
+);
+
 export const OtpInput: FC<{
   id: string;
   name: string;
