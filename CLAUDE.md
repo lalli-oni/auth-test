@@ -66,6 +66,8 @@ public/
 
 **Passkey Conditional Page**: `/passkey-conditional` is a standalone page that auto-triggers a WebAuthn conditional mediation request on load via `public/js/passkey-auto.js`. Use this pattern for dedicated passkey flows.
 
+**Variants**: This app exposes multiple variations of auth flows for testing. Variants are presented using a combo button pattern: a primary action button with a dropdown for alternative flows (e.g., passkey login has variants for different mediation modes). In-form options like checkboxes can also toggle behavior (e.g., "stay on page after success"). When adding a new auth flow, consider what variants would be useful for testing different UX patterns.
+
 ## Bun-Specific
 
 - Bun auto-loads `.env` - don't use dotenv
