@@ -52,15 +52,6 @@ const AdminSidebar: FC = () => (
         Refresh All
       </button>
     </div>
-
-    <div id="admin-modal" class="admin-modal hidden">
-      <div class="admin-modal-content">
-        <span class="admin-modal-close" onclick="AdminPanel.closeModal()">
-          &times;
-        </span>
-        <div id="admin-modal-body"></div>
-      </div>
-    </div>
   </aside>
 );
 
@@ -122,6 +113,14 @@ export const Layout: FC<PropsWithChildren<LayoutProps>> = ({
           </header>
           <div class="content">{children}</div>
         </main>
+      </div>
+      <div id="admin-modal" class="admin-modal hidden">
+        <div class="admin-modal-content">
+          <span class="admin-modal-close" onclick="AdminPanel.closeModal()">
+            &times;
+          </span>
+          <div id="admin-modal-body"></div>
+        </div>
       </div>
       <script src="/js/webauthn.js"></script>
       <script src="/js/admin.js"></script>
