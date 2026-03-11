@@ -76,7 +76,7 @@ const AdminPanel = {
           </div>
           <div class="detail-row">
             <span class="detail-label">Password</span>
-            <span>${user.passwordPlaintext ? `<code>${user.passwordPlaintext}</code>` : '<em>Unknown (set before tracking)</em>'}</span>
+            <span>${user.passwordPlaintext ? `<code>${user.passwordPlaintext}</code> <button class="btn btn-small btn-copy" onclick="AdminPanel.copyToClipboard('${user.passwordPlaintext.replace(/'/g, "\\'")}', this)">📋</button>` : '<em>Unknown (set before tracking)</em>'}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">TOTP</span>
@@ -542,6 +542,20 @@ const AdminPanel = {
         '[AdminPanel] Error resetting database - Exception:',
         err.message,
       );
+    }
+  },
+
+  // Clipboard
+  async copyToClipboard(text, button) {
+    try {
+      await navigator.clipboard.writeText(text);
+      const original = button.textContent;
+      button.textContent = '✅';
+      setTimeout(() => {
+        button.textContent = original;
+      }, 1500);
+    } catch (err) {
+      console.error('[AdminPanel] Failed to copy to clipboard:', err);
     }
   },
 
