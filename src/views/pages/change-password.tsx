@@ -3,11 +3,14 @@ import type { User } from '../../services/user.service';
 import { Alert, AuthCard, FormGroup, PasswordInput } from '../components';
 import { Layout } from '../layout';
 
-export type ChangePasswordVariant = 'no-current' | 'with-confirmation';
+export interface ChangePasswordOptions {
+  noCurrent?: boolean;
+  withConfirmation?: boolean;
+}
 
 export interface ChangePasswordPageProps {
   user: User;
-  variant?: ChangePasswordVariant;
+  options?: ChangePasswordOptions;
   stayOnPage?: boolean;
   error?: string;
   success?: string;
@@ -15,7 +18,7 @@ export interface ChangePasswordPageProps {
 
 export const ChangePasswordPage: FC<ChangePasswordPageProps> = ({
   user,
-  variant,
+  options,
   stayOnPage,
   error,
   success,
@@ -31,9 +34,14 @@ export const ChangePasswordPage: FC<ChangePasswordPageProps> = ({
           autocomplete="username"
           value={user.username}
         />
-        {variant && <input type="hidden" name="variant" value={variant} />}
+        {options?.noCurrent && (
+          <input type="hidden" name="no_current" value="1" />
+        )}
+        {options?.withConfirmation && (
+          <input type="hidden" name="with_confirmation" value="1" />
+        )}
 
-        {variant !== 'no-current' && (
+        {!options?.noCurrent && (
           <FormGroup label="Current Password" htmlFor="current_password">
             <PasswordInput
               id="current_password"
@@ -54,7 +62,7 @@ export const ChangePasswordPage: FC<ChangePasswordPageProps> = ({
           />
         </FormGroup>
 
-        {variant === 'with-confirmation' && (
+        {options?.withConfirmation && (
           <FormGroup
             label="Confirm New Password"
             htmlFor="confirm_new_password"
