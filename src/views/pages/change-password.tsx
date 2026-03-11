@@ -25,6 +25,12 @@ export const ChangePasswordPage: FC<ChangePasswordPageProps> = ({
       <Alert error={error} success={success} />
 
       <form action="/auth/change-password" method="post">
+        <input
+          type="hidden"
+          name="username"
+          autocomplete="username"
+          value={user.username}
+        />
         {variant && <input type="hidden" name="variant" value={variant} />}
 
         {variant !== 'no-current' && (
