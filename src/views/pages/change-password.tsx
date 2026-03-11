@@ -29,10 +29,13 @@ export const ChangePasswordPage: FC<ChangePasswordPageProps> = ({
 
       <form action="/auth/change-password" method="post">
         <input
-          type="hidden"
+          type="text"
           name="username"
           autocomplete="username"
           value={user.username}
+          readonly
+          tabindex={-1}
+          style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden"
         />
         {options?.noCurrent && (
           <input type="hidden" name="no_current" value="1" />
