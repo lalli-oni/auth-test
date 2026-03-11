@@ -95,6 +95,10 @@ export const ComboButton: FC<
   </div>
 );
 
+export const VariantPicker: FC<PropsWithChildren> = ({ children }) => (
+  <div class="variant-picker">{children}</div>
+);
+
 export const OtpInput: FC<{
   id: string;
   name: string;
