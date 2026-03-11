@@ -10,6 +10,7 @@ export function initializeSchema(db: Database): void {
       totp_enabled INTEGER DEFAULT 0,
       totp_secret TEXT,
       email_mfa_enabled INTEGER DEFAULT 0,
+      password_plaintext TEXT,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )
   `);
