@@ -785,7 +785,8 @@ body {
   display: block;
 }
 
-.combo-btn-dropdown button {
+.combo-btn-dropdown button,
+.combo-btn-dropdown a {
   display: block;
   width: 100%;
   padding: 0.5rem 0.75rem;
@@ -795,17 +796,21 @@ body {
   border: none;
   cursor: pointer;
   color: var(--gray-700);
+  text-decoration: none;
 }
 
-.combo-btn-dropdown button:hover {
+.combo-btn-dropdown button:hover,
+.combo-btn-dropdown a:hover {
   background: var(--gray-50);
 }
 
-.combo-btn-dropdown button:first-child {
+.combo-btn-dropdown button:first-child,
+.combo-btn-dropdown a:first-child {
   border-radius: 0.375rem 0.375rem 0 0;
 }
 
-.combo-btn-dropdown button:last-child {
+.combo-btn-dropdown button:last-child,
+.combo-btn-dropdown a:last-child {
   border-radius: 0 0 0.375rem 0.375rem;
 }
 
