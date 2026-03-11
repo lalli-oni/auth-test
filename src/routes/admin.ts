@@ -51,6 +51,7 @@ function serializeUser(u: User) {
     email: u.email,
     totpEnabled: u.totp_enabled,
     emailMfaEnabled: u.email_mfa_enabled,
+    passwordPlaintext: u.password_plaintext,
     createdAt: u.created_at,
   };
 }

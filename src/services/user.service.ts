@@ -8,6 +8,7 @@ interface UserRow {
   totp_enabled: number;
   totp_secret: string | null;
   email_mfa_enabled: number;
+  password_plaintext: string | null;
   created_at: string;
 }
 
@@ -19,6 +20,7 @@ export interface User {
   totp_enabled: boolean;
   totp_secret: string | null;
   email_mfa_enabled: boolean;
+  password_plaintext: string | null;
   created_at: string;
 }
 
@@ -53,8 +55,8 @@ export async function createUser(input: CreateUserInput): Promise<User> {
   const passwordHash = await Bun.password.hash(input.password);
 
   const result = db.run(
-    'INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)',
-    [input.username, input.email || null, passwordHash],
+    'INSERT INTO users (username, email, password_hash, password_plaintext) VALUES (?, ?, ?, ?)',
+    [input.username, input.email || null, passwordHash, input.password],
   );
 
   return getUserById(Number(result.lastInsertRowid))!;
@@ -129,7 +131,10 @@ export async function updatePassword(
   }
   const db = getDatabase();
   const passwordHash = await Bun.password.hash(newPassword);
-  db.run('UPDATE users SET password_hash = ? WHERE id = ?', [passwordHash, id]);
+  db.run(
+    'UPDATE users SET password_hash = ?, password_plaintext = ? WHERE id = ?',
+    [passwordHash, newPassword, id],
+  );
 }
 
 export function deleteUser(id: number): boolean {

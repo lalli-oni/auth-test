@@ -75,6 +75,10 @@ const AdminPanel = {
             <span>${user.email || 'Not set'}</span>
           </div>
           <div class="detail-row">
+            <span class="detail-label">Password</span>
+            <span>${user.passwordPlaintext ? `<code>${user.passwordPlaintext}</code>` : '<em>Unknown (set before tracking)</em>'}</span>
+          </div>
+          <div class="detail-row">
             <span class="detail-label">TOTP</span>
             <span>${user.totpEnabled ? 'Enabled' : 'Disabled'}</span>
           </div>
