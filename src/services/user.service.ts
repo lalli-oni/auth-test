@@ -124,6 +124,9 @@ export async function updatePassword(
   id: number,
   newPassword: string,
 ): Promise<void> {
+  if (newPassword.length < 6) {
+    throw new Error('Password must be at least 6 characters');
+  }
   const db = getDatabase();
   const passwordHash = await Bun.password.hash(newPassword);
   db.run('UPDATE users SET password_hash = ? WHERE id = ?', [passwordHash, id]);
