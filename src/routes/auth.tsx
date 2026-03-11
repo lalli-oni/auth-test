@@ -13,7 +13,7 @@ import {
   updatePassword,
   verifyPassword,
 } from '../services/user.service';
-import type { ChangePasswordVariant } from '../views/pages/change-password';
+import type { ChangePasswordOptions } from '../views/pages/change-password';
 import { ChangePasswordPage } from '../views/pages/change-password';
 import { LoginPage } from '../views/pages/login';
 import { RegisterPage } from '../views/pages/register';
@@ -181,15 +181,21 @@ auth.get('/status', (c) => {
 // Change password page
 auth.get('/change-password', requireMfaVerified, (c) => {
   const user = c.get('user')!;
-  const variant = c.req.query('variant') as ChangePasswordVariant | undefined;
-  return c.html(<ChangePasswordPage user={user} variant={variant} />);
+  const options: ChangePasswordOptions = {
+    noCurrent: c.req.query('no_current') === '1',
+    withConfirmation: c.req.query('with_confirmation') === '1',
+  };
+  return c.html(<ChangePasswordPage user={user} options={options} />);
 });
 
 // Change password handler
 auth.post('/change-password', requireMfaVerified, async (c) => {
   const user = c.get('user')!;
   const body = await c.req.parseBody();
-  const variant = body.variant as ChangePasswordVariant | undefined;
+  const options: ChangePasswordOptions = {
+    noCurrent: body.no_current === '1',
+    withConfirmation: body.with_confirmation === '1',
+  };
   const currentPassword = body.current_password as string;
   const newPassword = body.new_password as string;
   const confirmNewPassword = body.confirm_new_password as string;
@@ -199,7 +205,7 @@ auth.post('/change-password', requireMfaVerified, async (c) => {
     c.html(
       <ChangePasswordPage
         user={user}
-        variant={variant}
+        options={options}
         stayOnPage={stayOnPage}
         error={error}
       />,
@@ -209,7 +215,7 @@ auth.post('/change-password', requireMfaVerified, async (c) => {
     return renderError('New password must be at least 6 characters');
   }
 
-  if (variant !== 'no-current') {
+  if (!options.noCurrent) {
     if (!currentPassword) {
       return renderError('Current password is required');
     }
@@ -226,7 +232,7 @@ auth.post('/change-password', requireMfaVerified, async (c) => {
     }
   }
 
-  if (variant === 'with-confirmation' && newPassword !== confirmNewPassword) {
+  if (options.withConfirmation && newPassword !== confirmNewPassword) {
     return renderError('New passwords do not match');
   }
 
@@ -246,7 +252,7 @@ auth.post('/change-password', requireMfaVerified, async (c) => {
     return c.html(
       <ChangePasswordPage
         user={user}
-        variant={variant}
+        options={options}
         stayOnPage={stayOnPage}
         success="Password changed successfully"
       />,

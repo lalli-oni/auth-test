@@ -83,30 +83,28 @@ window.showTotpSetup = showTotpSetup;
 window.closeTotpSetup = closeTotpSetup;
 window.deletePasskey = deletePasskey;
 
+function updateChangePasswordHref() {
+  const link = document.getElementById('change-password-link');
+  if (!link) return;
+
+  const params = new URLSearchParams();
+  for (const cb of document.querySelectorAll('[data-cp-option]')) {
+    if (cb.checked) {
+      params.set(cb.dataset.cpOption, '1');
+    }
+  }
+
+  const qs = params.toString();
+  link.href = `/auth/change-password${qs ? `?${qs}` : ''}`;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const verifyForm = document.getElementById('totp-verify-form');
   if (verifyForm) {
     verifyForm.addEventListener('submit', verifyTotpSetup);
   }
 
-  // Combo button dropdown toggle
-  document.querySelectorAll('.combo-btn-toggle').forEach((toggle) => {
-    toggle.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const comboBtn = toggle.closest('.combo-btn');
-      document.querySelectorAll('.combo-btn.open').forEach((btn) => {
-        if (btn !== comboBtn) btn.classList.remove('open');
-      });
-      comboBtn.classList.toggle('open');
-    });
-  });
-
-  // Close combo button dropdown when clicking outside
-  document.addEventListener('click', (e) => {
-    document.querySelectorAll('.combo-btn.open').forEach((btn) => {
-      if (!btn.contains(e.target)) {
-        btn.classList.remove('open');
-      }
-    });
-  });
+  for (const cb of document.querySelectorAll('[data-cp-option]')) {
+    cb.addEventListener('change', updateChangePasswordHref);
+  }
 });

@@ -129,27 +129,29 @@ export const DashboardPage: FC<DashboardPageProps> = ({
             <p>Change your account password.</p>
           </div>
           <div class="security-option-actions">
-            <div class="combo-btn">
-              <a href="/auth/change-password" class="btn btn-primary btn-small">
-                Change Password
-              </a>
-              <div class="combo-btn-dropdown">
-                <button
-                  type="button"
-                  class="combo-btn-toggle btn btn-primary btn-small"
-                >
-                  ▾
-                </button>
-                <div class="combo-btn-menu">
-                  <a href="/auth/change-password?variant=no-current">
-                    No current password
-                  </a>
-                  <a href="/auth/change-password?variant=with-confirmation">
-                    With confirmation
-                  </a>
-                </div>
-              </div>
-            </div>
+            <label class="checkbox-label">
+              <input
+                type="checkbox"
+                id="cp-no-current"
+                data-cp-option="no_current"
+              />
+              Skip current password
+            </label>
+            <label class="checkbox-label">
+              <input
+                type="checkbox"
+                id="cp-with-confirmation"
+                data-cp-option="with_confirmation"
+              />
+              Require confirmation
+            </label>
+            <a
+              id="change-password-link"
+              href="/auth/change-password"
+              class="btn btn-primary btn-small"
+            >
+              Change Password
+            </a>
           </div>
         </div>
       </div>
