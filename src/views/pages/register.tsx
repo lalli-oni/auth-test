@@ -76,5 +76,6 @@ export const RegisterPage: FC<RegisterPageProps> = ({
       </p>
     </AuthCard>
     <script src="/js/password-toggle.js" />
+    <script src="/js/stay-on-page.js" />
   </Layout>
 );

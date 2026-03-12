@@ -20,6 +20,10 @@ import { RegisterPage } from '../views/pages/register';
 
 const auth = new Hono();
 
+function isAjax(c: { req: { header: (name: string) => string | undefined } }) {
+  return c.req.header('X-Requested-With') === 'XMLHttpRequest';
+}
+
 // Login page
 auth.get('/login', (c) => {
   const session = c.get('session');
@@ -37,7 +41,10 @@ auth.post('/login', async (c) => {
 
   const stayOnPage = body.stay_on_page === '1';
 
+  const ajax = stayOnPage && isAjax(c);
+
   if (!username || !password) {
+    if (ajax) return c.json({ error: 'Username and password are required' });
     return c.html(
       <LoginPage
         error="Username and password are required"
@@ -52,6 +59,7 @@ auth.post('/login', async (c) => {
       username,
       reason: 'user_not_found',
     });
+    if (ajax) return c.json({ error: 'Invalid username or password' });
     return c.html(
       <LoginPage
         error="Invalid username or password"
@@ -63,6 +71,7 @@ auth.post('/login', async (c) => {
   const validPassword = await verifyPassword(user, password);
   if (!validPassword) {
     logAuthEvent('login_failed', user.id, { reason: 'invalid_password' });
+    if (ajax) return c.json({ error: 'Invalid username or password' });
     return c.html(
       <LoginPage
         error="Invalid username or password"
@@ -90,6 +99,7 @@ auth.post('/login', async (c) => {
   }
 
   if (stayOnPage) {
+    if (ajax) return c.json({ success: 'Logged in successfully' });
     return c.html(
       <LoginPage success="Logged in successfully" stayOnPage={stayOnPage} />,
     );
@@ -115,8 +125,10 @@ auth.post('/register', async (c) => {
   const password = body.password as string;
   const confirmPassword = body.confirm_password as string;
   const stayOnPage = body.stay_on_page === '1';
+  const ajax = stayOnPage && isAjax(c);
 
   if (!username || !password) {
+    if (ajax) return c.json({ error: 'Username and password are required' });
     return c.html(
       <RegisterPage
         error="Username and password are required"
@@ -126,6 +138,7 @@ auth.post('/register', async (c) => {
   }
 
   if (password !== confirmPassword) {
+    if (ajax) return c.json({ error: 'Passwords do not match' });
     return c.html(
       <RegisterPage error="Passwords do not match" stayOnPage={stayOnPage} />,
     );
@@ -133,6 +146,7 @@ auth.post('/register', async (c) => {
 
   const existingUser = getUserByUsername(username);
   if (existingUser) {
+    if (ajax) return c.json({ error: 'Username already taken' });
     return c.html(
       <RegisterPage error="Username already taken" stayOnPage={stayOnPage} />,
     );
@@ -153,6 +167,7 @@ auth.post('/register', async (c) => {
     setSessionCookie(c, session.id);
 
     if (stayOnPage) {
+      if (ajax) return c.json({ success: 'Account created successfully' });
       return c.html(
         <RegisterPage
           success="Account created successfully"
@@ -167,6 +182,7 @@ auth.post('/register', async (c) => {
       error instanceof Error
         ? error.message
         : 'Failed to create account. Please try again.';
+    if (ajax) return c.json({ error: message });
     return c.html(<RegisterPage error={message} stayOnPage={stayOnPage} />);
   }
 });
@@ -242,9 +258,11 @@ auth.post('/change-password', requireMfaVerified, async (c) => {
   const newPassword = body.new_password as string;
   const confirmNewPassword = body.confirm_new_password as string;
   const stayOnPage = body.stay_on_page === '1';
+  const ajax = stayOnPage && isAjax(c);
 
-  const renderError = (error: string) =>
-    c.html(
+  const renderError = (error: string) => {
+    if (ajax) return c.json({ error });
+    return c.html(
       <ChangePasswordPage
         user={user}
         options={options}
@@ -252,6 +270,7 @@ auth.post('/change-password', requireMfaVerified, async (c) => {
         error={error}
       />,
     );
+  };
 
   if (!newPassword || newPassword.length < 6) {
     return renderError('New password must be at least 6 characters');
@@ -291,6 +310,7 @@ auth.post('/change-password', requireMfaVerified, async (c) => {
   logAuthEvent('password_changed', user.id);
 
   if (stayOnPage) {
+    if (ajax) return c.json({ success: 'Password changed successfully' });
     return c.html(
       <ChangePasswordPage
         user={user}

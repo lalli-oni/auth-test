@@ -4,10 +4,10 @@ export const Alert: FC<{ error?: string; success?: string }> = ({
   error,
   success,
 }) => (
-  <>
+  <div id="alert-container">
     {error && <div class="alert alert-error">{error}</div>}
     {success && <div class="alert alert-success">{success}</div>}
-  </>
+  </div>
 );
 
 export const AuthCard: FC<PropsWithChildren<{ title: string }>> = ({

@@ -106,5 +106,6 @@ export const LoginPage: FC<LoginPageProps> = ({
       </p>
     </AuthCard>
     <script src="/js/login.js" />
+    <script src="/js/stay-on-page.js" />
   </Layout>
 );

@@ -103,5 +103,6 @@ export const ChangePasswordPage: FC<ChangePasswordPageProps> = ({
     </AuthCard>
 
     <script src="/js/password-toggle.js" />
+    <script src="/js/stay-on-page.js" />
   </Layout>
 );
