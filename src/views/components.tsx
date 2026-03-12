@@ -61,18 +61,24 @@ export const ComboButton: FC<
     primaryLabel: string;
     primaryHref?: string;
     primaryOnclick?: string;
+    primaryTitle?: string;
     btnStyle?: string;
   }>
 > = ({
   primaryLabel,
   primaryHref,
   primaryOnclick,
+  primaryTitle,
   btnStyle = 'btn-primary',
   children,
 }) => (
   <div class="combo-btn">
     {primaryHref ? (
-      <a href={primaryHref} class={`btn ${btnStyle} combo-btn-main`}>
+      <a
+        href={primaryHref}
+        class={`btn ${btnStyle} combo-btn-main`}
+        title={primaryTitle}
+      >
         {primaryLabel}
       </a>
     ) : (
@@ -80,6 +86,7 @@ export const ComboButton: FC<
         type="button"
         onclick={primaryOnclick}
         class={`btn ${btnStyle} combo-btn-main`}
+        title={primaryTitle}
       >
         {primaryLabel}
       </button>
