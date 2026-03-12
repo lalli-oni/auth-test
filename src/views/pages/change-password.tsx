@@ -1,4 +1,5 @@
 import type { FC } from 'hono/jsx';
+import { getVariantById } from '../../config/variants';
 import type { User } from '../../services/user.service';
 import { Alert, AuthCard, FormGroup, PasswordInput } from '../components';
 import { Layout } from '../layout';
@@ -81,7 +82,10 @@ export const ChangePasswordPage: FC<ChangePasswordPageProps> = ({
         )}
 
         <div class="form-group">
-          <label class="checkbox-label">
+          <label
+            class="checkbox-label"
+            title={getVariantById('stay-on-page')?.tooltip}
+          >
             <input
               type="checkbox"
               name="stay_on_page"

@@ -1,5 +1,5 @@
 import type { FC } from 'hono/jsx';
-import { getVariantsByGroup } from '../../config/variants';
+import { getVariantById, getVariantsByGroup } from '../../config/variants';
 import { Alert, AuthCard, ComboButton, FormGroup } from '../components';
 import { Layout } from '../layout';
 
@@ -53,10 +53,7 @@ export const LoginPage: FC<LoginPageProps> = ({
         </FormGroup>
 
         <div class="form-group">
-          <label
-            id="mfa-label"
-            title="Enter your username to check 2FA availability"
-          >
+          <label id="mfa-label" title={getVariantById('require-2fa')?.tooltip}>
             <input
               type="checkbox"
               id="require_2fa"
@@ -69,7 +66,10 @@ export const LoginPage: FC<LoginPageProps> = ({
         </div>
 
         <div class="form-group">
-          <label class="checkbox-label">
+          <label
+            class="checkbox-label"
+            title={getVariantById('stay-on-page')?.tooltip}
+          >
             <input
               type="checkbox"
               name="stay_on_page"
@@ -92,10 +92,15 @@ export const LoginPage: FC<LoginPageProps> = ({
       <ComboButton
         primaryLabel={`Login with Passkey (${primaryPasskey.label.toLowerCase()})`}
         primaryOnclick={passkeyOnclick(primaryPasskey.id)}
+        primaryTitle={primaryPasskey.tooltip}
         btnStyle="btn-secondary"
       >
         {secondaryPasskeys.map((v) => (
-          <button type="button" onclick={passkeyOnclick(v.id)}>
+          <button
+            type="button"
+            onclick={passkeyOnclick(v.id)}
+            title={v.tooltip}
+          >
             {v.label}
           </button>
         ))}
