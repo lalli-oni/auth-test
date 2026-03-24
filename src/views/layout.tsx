@@ -122,6 +122,7 @@ export const Layout: FC<PropsWithChildren<LayoutProps>> = ({
           <div id="admin-modal-body"></div>
         </div>
       </div>
+      <script src="/js/logger.js"></script>
       <script src="/js/webauthn.js"></script>
       <script src="/js/admin.js"></script>
     </body>
