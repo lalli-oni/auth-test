@@ -1,6 +1,8 @@
 // WebAuthn Client-side helpers
 
 const WebAuthnClient = {
+  _logger: Logger.create('WebAuthnClient'),
+
   // Convert base64url to ArrayBuffer
   base64urlToBuffer(base64url) {
     const padding = '='.repeat((4 - (base64url.length % 4)) % 4);
@@ -37,8 +39,8 @@ const WebAuthnClient = {
       const optionsData = await optionsRes.json();
 
       if (!optionsData.success) {
-        console.error(
-          '[WebAuthnClient] Failed to get registration options - Status:',
+        this._logger.error(
+          'Failed to get registration options:',
           optionsData.error,
         );
         return;
@@ -97,29 +99,16 @@ const WebAuthnClient = {
       const verifyData = await verifyRes.json();
 
       if (verifyData.success) {
-        console.log('[WebAuthnClient] Passkey registered successfully');
+        this._logger.info('Passkey registered successfully');
         window.location.reload();
       } else {
-        console.error(
-          '[WebAuthnClient] Failed to register passkey - Status:',
-          verifyData.error,
-        );
+        this._logger.error('Failed to register passkey:', verifyData.error);
       }
     } catch (error) {
-      console.error(
-        '[WebAuthnClient] Passkey registration error - Exception:',
-        error,
+      this._logger.error(
+        `Passkey registration error (${error.name}):`,
+        error.message,
       );
-      if (error.name === 'NotAllowedError') {
-        console.warn(
-          '[WebAuthnClient] Passkey registration cancelled or not allowed by user',
-        );
-      } else {
-        console.error(
-          '[WebAuthnClient] Error registering passkey - Exception:',
-          error.message,
-        );
-      }
     }
   },
 
@@ -134,8 +123,8 @@ const WebAuthnClient = {
       const optionsData = await optionsRes.json();
 
       if (!optionsData.success) {
-        console.error(
-          '[WebAuthnClient] Failed to get authentication options - Status:',
+        this._logger.error(
+          'Failed to get authentication options:',
           optionsData.error,
         );
         return;
@@ -160,7 +149,7 @@ const WebAuthnClient = {
         mediation,
       });
 
-      console.log('web app credential received', credential);
+      this._logger.debug('Credential received', credential);
 
       // Prepare response for server
       const response = {
@@ -190,34 +179,22 @@ const WebAuthnClient = {
       });
       const verifyData = await verifyRes.json();
 
-      console.log('passkey verification response', verifyData);
+      this._logger.debug('Verification response', verifyData);
+
       if (verifyData.success) {
-        console.log(
-          '[WebAuthnClient] Passkey authentication successful - action:',
+        this._logger.info(
+          'Passkey authentication successful - action:',
           verifyData.action,
         );
         window.location.href = '/dashboard';
       } else {
-        console.error(
-          '[WebAuthnClient] Passkey authentication failed - Status:',
-          verifyData.error,
-        );
+        this._logger.error('Passkey authentication failed:', verifyData.error);
       }
     } catch (error) {
-      console.error(
-        '[WebAuthnClient] Passkey authentication error - Exception:',
-        error,
+      this._logger.error(
+        `Passkey authentication error (${error.name}):`,
+        error.message,
       );
-      if (error.name === 'NotAllowedError') {
-        console.warn(
-          '[WebAuthnClient] Passkey authentication cancelled or not allowed by user',
-        );
-      } else {
-        console.error(
-          '[WebAuthnClient] Error authenticating with passkey - Exception:',
-          error.message,
-        );
-      }
     }
   },
 };
