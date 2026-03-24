@@ -1,4 +1,5 @@
 (() => {
+  const _loginLogger = Logger.create('Login');
   const usernameInput = document.getElementById('username');
   const mfaCheckbox = document.getElementById('require_2fa');
   const mfaLabel = document.getElementById('mfa-label');
@@ -42,7 +43,7 @@
         mfaLabel.title = TOOLTIP_NO_MFA;
       }
     } catch (e) {
-      console.error('[Login] MFA status check failed:', e);
+      _loginLogger.error('MFA status check failed:', e);
     }
   }
 
