@@ -7,7 +7,7 @@ import { Alert, VariantPicker } from '../components';
 import { Layout } from '../layout';
 
 const changePasswordCheckboxes = getVariantsByFlow('change-password').filter(
-  (v) => v.type === 'checkbox' && v.id !== 'stay-on-page',
+  (v) => v.type === 'checkbox',
 );
 
 const cpOptionMap: Record<string, string> = {
