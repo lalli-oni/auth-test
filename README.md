@@ -135,6 +135,12 @@ Email MFA does not send real emails. Codes are stored in the database and readab
 |--------|------|-------------|
 | `POST` | `/admin/reset` | Drop and recreate all tables — clean slate |
 
+## Similar projects
+
+- [webtests.dev](https://webtests.dev/category/create/) — Bitwarden project with various authentication flows
+- [passkeys.io](https://www.passkeys.io/) — General passkey testing
+- [passkeyprf.com](https://www.passkeyprf.com/) — Passkey testing including PRF specifics
+
 ## Quick start
 
 ```bash

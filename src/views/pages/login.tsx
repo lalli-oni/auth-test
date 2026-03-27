@@ -1,6 +1,12 @@
 import type { FC } from 'hono/jsx';
 import { getVariantById, getVariantsByGroup } from '../../config/variants';
-import { Alert, AuthCard, ComboButton, FormGroup } from '../components';
+import {
+  Alert,
+  AuthCard,
+  ComboButton,
+  FormGroup,
+  PasswordInput,
+} from '../components';
 import { Layout } from '../layout';
 
 const passkeyMediationVariants = getVariantsByGroup('passkey-mediation');
@@ -18,13 +24,17 @@ function passkeyOnclick(variantId: string): string {
 export interface LoginPageProps {
   error?: string;
   success?: string;
+  useFetch?: boolean;
   stayOnPage?: boolean;
+  redirectToLogin?: boolean;
 }
 
 export const LoginPage: FC<LoginPageProps> = ({
   error,
   success,
+  useFetch,
   stayOnPage,
+  redirectToLogin,
 }) => (
   <Layout title="Login">
     <AuthCard title="Login">
@@ -43,8 +53,7 @@ export const LoginPage: FC<LoginPageProps> = ({
         </FormGroup>
 
         <FormGroup label="Password" htmlFor="password">
-          <input
-            type="password"
+          <PasswordInput
             id="password"
             name="password"
             autocomplete="current-password"
@@ -68,6 +77,21 @@ export const LoginPage: FC<LoginPageProps> = ({
         <div class="form-group">
           <label
             class="checkbox-label"
+            title={getVariantById('use-fetch')?.tooltip}
+          >
+            <input
+              type="checkbox"
+              name="use_fetch"
+              value="1"
+              checked={useFetch}
+            />
+            Use fetch
+          </label>
+        </div>
+
+        <div class="form-group">
+          <label
+            class="checkbox-label"
             title={getVariantById('stay-on-page')?.tooltip}
           >
             <input
@@ -77,6 +101,21 @@ export const LoginPage: FC<LoginPageProps> = ({
               checked={stayOnPage}
             />
             Stay on page after success
+          </label>
+        </div>
+
+        <div class="form-group">
+          <label
+            class="checkbox-label"
+            title={getVariantById('redirect-to-login')?.tooltip}
+          >
+            <input
+              type="checkbox"
+              name="redirect_to_login"
+              value="1"
+              checked={redirectToLogin}
+            />
+            Redirect to login after success
           </label>
         </div>
 
@@ -111,6 +150,7 @@ export const LoginPage: FC<LoginPageProps> = ({
       </p>
     </AuthCard>
     <script src="/js/login.js" />
-    <script src="/js/stay-on-page.js" />
+    <script src="/js/password-toggle.js" />
+    <script src="/js/form-submit.js" />
   </Layout>
 );

@@ -12,6 +12,7 @@ export interface ChangePasswordOptions {
 export interface ChangePasswordPageProps {
   user: User;
   options?: ChangePasswordOptions;
+  useFetch?: boolean;
   stayOnPage?: boolean;
   error?: string;
   success?: string;
@@ -20,6 +21,7 @@ export interface ChangePasswordPageProps {
 export const ChangePasswordPage: FC<ChangePasswordPageProps> = ({
   user,
   options,
+  useFetch,
   stayOnPage,
   error,
   success,
@@ -84,6 +86,21 @@ export const ChangePasswordPage: FC<ChangePasswordPageProps> = ({
         <div class="form-group">
           <label
             class="checkbox-label"
+            title={getVariantById('use-fetch')?.tooltip}
+          >
+            <input
+              type="checkbox"
+              name="use_fetch"
+              value="1"
+              checked={useFetch}
+            />
+            Use fetch
+          </label>
+        </div>
+
+        <div class="form-group">
+          <label
+            class="checkbox-label"
             title={getVariantById('stay-on-page')?.tooltip}
           >
             <input
@@ -107,6 +124,6 @@ export const ChangePasswordPage: FC<ChangePasswordPageProps> = ({
     </AuthCard>
 
     <script src="/js/password-toggle.js" />
-    <script src="/js/stay-on-page.js" />
+    <script src="/js/form-submit.js" />
   </Layout>
 );

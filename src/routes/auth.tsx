@@ -27,7 +27,8 @@ function isAjax(c: { req: { header: (name: string) => string | undefined } }) {
 // Login page
 auth.get('/login', (c) => {
   const session = c.get('session');
-  if (session) {
+  const redirected = c.req.query('redirected') === 'true';
+  if (session && !redirected) {
     return c.redirect('/dashboard');
   }
   return c.html(<LoginPage />);
@@ -39,18 +40,25 @@ auth.post('/login', async (c) => {
   const username = body.username as string;
   const password = body.password as string;
 
+  const useFetch = body.use_fetch === '1';
   const stayOnPage = body.stay_on_page === '1';
+  const redirectToLogin = body.redirect_to_login === '1';
+  const ajax = useFetch && isAjax(c);
 
-  const ajax = stayOnPage && isAjax(c);
-
-  if (!username || !password) {
-    if (ajax) return c.json({ error: 'Username and password are required' });
+  const renderError = (error: string) => {
+    if (ajax) return c.json({ error });
     return c.html(
       <LoginPage
-        error="Username and password are required"
+        error={error}
+        useFetch={useFetch}
         stayOnPage={stayOnPage}
+        redirectToLogin={redirectToLogin}
       />,
     );
+  };
+
+  if (!username || !password) {
+    return renderError('Username and password are required');
   }
 
   const user = getUserByUsername(username);
@@ -59,25 +67,13 @@ auth.post('/login', async (c) => {
       username,
       reason: 'user_not_found',
     });
-    if (ajax) return c.json({ error: 'Invalid username or password' });
-    return c.html(
-      <LoginPage
-        error="Invalid username or password"
-        stayOnPage={stayOnPage}
-      />,
-    );
+    return renderError('Invalid username or password');
   }
 
   const validPassword = await verifyPassword(user, password);
   if (!validPassword) {
     logAuthEvent('login_failed', user.id, { reason: 'invalid_password' });
-    if (ajax) return c.json({ error: 'Invalid username or password' });
-    return c.html(
-      <LoginPage
-        error="Invalid username or password"
-        stayOnPage={stayOnPage}
-      />,
-    );
+    return renderError('Invalid username or password');
   }
 
   const hasMfa = user.totp_enabled || user.email_mfa_enabled;
@@ -98,11 +94,22 @@ auth.post('/login', async (c) => {
     return c.redirect('/mfa/verify');
   }
 
+  // Handle post-success behavior
+  if (ajax) return c.json({ success: 'Logged in successfully' });
+
   if (stayOnPage) {
-    if (ajax) return c.json({ success: 'Logged in successfully' });
     return c.html(
-      <LoginPage success="Logged in successfully" stayOnPage={stayOnPage} />,
+      <LoginPage
+        success="Logged in successfully"
+        useFetch={useFetch}
+        stayOnPage={stayOnPage}
+        redirectToLogin={redirectToLogin}
+      />,
     );
+  }
+
+  if (redirectToLogin) {
+    return c.redirect('/auth/login?redirected=true');
   }
 
   return c.redirect('/dashboard');
@@ -124,32 +131,32 @@ auth.post('/register', async (c) => {
   const email = body.email as string | undefined;
   const password = body.password as string;
   const confirmPassword = body.confirm_password as string;
+  const useFetch = body.use_fetch === '1';
   const stayOnPage = body.stay_on_page === '1';
-  const ajax = stayOnPage && isAjax(c);
+  const ajax = useFetch && isAjax(c);
 
-  if (!username || !password) {
-    if (ajax) return c.json({ error: 'Username and password are required' });
+  const renderError = (error: string) => {
+    if (ajax) return c.json({ error });
     return c.html(
       <RegisterPage
-        error="Username and password are required"
+        error={error}
+        useFetch={useFetch}
         stayOnPage={stayOnPage}
       />,
     );
+  };
+
+  if (!username || !password) {
+    return renderError('Username and password are required');
   }
 
   if (password !== confirmPassword) {
-    if (ajax) return c.json({ error: 'Passwords do not match' });
-    return c.html(
-      <RegisterPage error="Passwords do not match" stayOnPage={stayOnPage} />,
-    );
+    return renderError('Passwords do not match');
   }
 
   const existingUser = getUserByUsername(username);
   if (existingUser) {
-    if (ajax) return c.json({ error: 'Username already taken' });
-    return c.html(
-      <RegisterPage error="Username already taken" stayOnPage={stayOnPage} />,
-    );
+    return renderError('Username already taken');
   }
 
   try {
@@ -166,11 +173,13 @@ auth.post('/register', async (c) => {
 
     setSessionCookie(c, session.id);
 
+    if (ajax) return c.json({ success: 'Account created successfully' });
+
     if (stayOnPage) {
-      if (ajax) return c.json({ success: 'Account created successfully' });
       return c.html(
         <RegisterPage
           success="Account created successfully"
+          useFetch={useFetch}
           stayOnPage={stayOnPage}
         />,
       );
@@ -182,8 +191,7 @@ auth.post('/register', async (c) => {
       error instanceof Error
         ? error.message
         : 'Failed to create account. Please try again.';
-    if (ajax) return c.json({ error: message });
-    return c.html(<RegisterPage error={message} stayOnPage={stayOnPage} />);
+    return renderError(message);
   }
 });
 
@@ -257,8 +265,9 @@ auth.post('/change-password', requireMfaVerified, async (c) => {
   const currentPassword = body.current_password as string;
   const newPassword = body.new_password as string;
   const confirmNewPassword = body.confirm_new_password as string;
+  const useFetch = body.use_fetch === '1';
   const stayOnPage = body.stay_on_page === '1';
-  const ajax = stayOnPage && isAjax(c);
+  const ajax = useFetch && isAjax(c);
 
   const renderError = (error: string) => {
     if (ajax) return c.json({ error });
@@ -266,6 +275,7 @@ auth.post('/change-password', requireMfaVerified, async (c) => {
       <ChangePasswordPage
         user={user}
         options={options}
+        useFetch={useFetch}
         stayOnPage={stayOnPage}
         error={error}
       />,
@@ -309,12 +319,14 @@ auth.post('/change-password', requireMfaVerified, async (c) => {
 
   logAuthEvent('password_changed', user.id);
 
+  if (ajax) return c.json({ success: 'Password changed successfully' });
+
   if (stayOnPage) {
-    if (ajax) return c.json({ success: 'Password changed successfully' });
     return c.html(
       <ChangePasswordPage
         user={user}
         options={options}
+        useFetch={useFetch}
         stayOnPage={stayOnPage}
         success="Password changed successfully"
       />,
