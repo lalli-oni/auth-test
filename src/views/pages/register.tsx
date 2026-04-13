@@ -1,6 +1,11 @@
 import type { FC } from 'hono/jsx';
-import { getVariantById } from '../../config/variants';
-import { Alert, AuthCard, FormGroup, PasswordInput } from '../components';
+import {
+  Alert,
+  AuthCard,
+  FormGroup,
+  PasswordInput,
+  VariantCheckbox,
+} from '../components';
 import { Layout } from '../layout';
 
 export interface RegisterPageProps {
@@ -57,35 +62,8 @@ export const RegisterPage: FC<RegisterPageProps> = ({
           />
         </FormGroup>
 
-        <div class="form-group">
-          <label
-            class="checkbox-label"
-            title={getVariantById('use-fetch')?.tooltip}
-          >
-            <input
-              type="checkbox"
-              name="use_fetch"
-              value="1"
-              checked={useFetch}
-            />
-            Use fetch
-          </label>
-        </div>
-
-        <div class="form-group">
-          <label
-            class="checkbox-label"
-            title={getVariantById('stay-on-page')?.tooltip}
-          >
-            <input
-              type="checkbox"
-              name="stay_on_page"
-              value="1"
-              checked={stayOnPage}
-            />
-            Stay on page after success
-          </label>
-        </div>
+        <VariantCheckbox variantId="use-fetch" checked={useFetch} />
+        <VariantCheckbox variantId="stay-on-page" checked={stayOnPage} />
 
         <button type="submit" class="btn btn-primary">
           Create Account

@@ -1,4 +1,5 @@
 import type { FC, PropsWithChildren } from 'hono/jsx';
+import { getVariantById } from '../config/variants';
 
 export const Alert: FC<{ error?: string; success?: string }> = ({
   error,
@@ -105,6 +106,23 @@ export const ComboButton: FC<
 export const VariantPicker: FC<PropsWithChildren> = ({ children }) => (
   <div class="variant-picker">{children}</div>
 );
+
+export const VariantCheckbox: FC<{
+  variantId: string;
+  checked?: boolean;
+}> = ({ variantId, checked }) => {
+  const variant = getVariantById(variantId);
+  if (!variant) return null;
+  const fieldName = variantId.replace(/-/g, '_');
+  return (
+    <div class="form-group">
+      <label class="checkbox-label" title={variant.tooltip}>
+        <input type="checkbox" name={fieldName} value="1" checked={checked} />
+        {variant.label}
+      </label>
+    </div>
+  );
+};
 
 export const OtpInput: FC<{
   id: string;
