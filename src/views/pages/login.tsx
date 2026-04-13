@@ -1,11 +1,12 @@
 import type { FC } from 'hono/jsx';
-import { getVariantById, getVariantsByGroup } from '../../config/variants';
+import { getVariantsByGroup } from '../../config/variants';
 import {
   Alert,
   AuthCard,
   ComboButton,
   FormGroup,
   PasswordInput,
+  VariantCheckbox,
 } from '../components';
 import { Layout } from '../layout';
 
@@ -74,50 +75,12 @@ export const LoginPage: FC<LoginPageProps> = ({
           </label>
         </div>
 
-        <div class="form-group">
-          <label
-            class="checkbox-label"
-            title={getVariantById('use-fetch')?.tooltip}
-          >
-            <input
-              type="checkbox"
-              name="use_fetch"
-              value="1"
-              checked={useFetch}
-            />
-            Use fetch
-          </label>
-        </div>
-
-        <div class="form-group">
-          <label
-            class="checkbox-label"
-            title={getVariantById('stay-on-page')?.tooltip}
-          >
-            <input
-              type="checkbox"
-              name="stay_on_page"
-              value="1"
-              checked={stayOnPage}
-            />
-            Stay on page after success
-          </label>
-        </div>
-
-        <div class="form-group">
-          <label
-            class="checkbox-label"
-            title={getVariantById('redirect-to-login')?.tooltip}
-          >
-            <input
-              type="checkbox"
-              name="redirect_to_login"
-              value="1"
-              checked={redirectToLogin}
-            />
-            Redirect to login after success
-          </label>
-        </div>
+        <VariantCheckbox variantId="use-fetch" checked={useFetch} />
+        <VariantCheckbox variantId="stay-on-page" checked={stayOnPage} />
+        <VariantCheckbox
+          variantId="redirect-to-login"
+          checked={redirectToLogin}
+        />
 
         <button type="submit" class="btn btn-primary">
           Login
