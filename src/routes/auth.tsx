@@ -96,7 +96,16 @@ auth.post('/login', async (c) => {
   }
 
   // Handle post-success behavior
-  if (ajax) return c.json({ success: 'Logged in successfully' });
+  const loginRedirect = redirectToLogin
+    ? '/auth/login?redirected=true'
+    : '/dashboard';
+
+  if (ajax) {
+    return c.json({
+      success: 'Logged in successfully',
+      redirect: stayOnPage ? undefined : loginRedirect,
+    });
+  }
 
   if (stayOnPage) {
     return c.html(
@@ -109,11 +118,7 @@ auth.post('/login', async (c) => {
     );
   }
 
-  if (redirectToLogin) {
-    return c.redirect('/auth/login?redirected=true');
-  }
-
-  return c.redirect('/dashboard');
+  return c.redirect(loginRedirect);
 });
 
 // Register page
@@ -174,7 +179,12 @@ auth.post('/register', async (c) => {
 
     setSessionCookie(c, session.id);
 
-    if (ajax) return c.json({ success: 'Account created successfully' });
+    if (ajax) {
+      return c.json({
+        success: 'Account created successfully',
+        redirect: stayOnPage ? undefined : '/dashboard',
+      });
+    }
 
     if (stayOnPage) {
       return c.html(
@@ -320,7 +330,12 @@ auth.post('/change-password', requireMfaVerified, async (c) => {
 
   logAuthEvent('password_changed', user.id);
 
-  if (ajax) return c.json({ success: 'Password changed successfully' });
+  if (ajax) {
+    return c.json({
+      success: 'Password changed successfully',
+      redirect: stayOnPage ? undefined : '/dashboard',
+    });
+  }
 
   if (stayOnPage) {
     return c.html(
