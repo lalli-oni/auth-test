@@ -6,14 +6,14 @@ import type { PasskeyCredential } from '../../services/webauthn.service';
 import { Alert, VariantPicker } from '../components';
 import { Layout } from '../layout';
 
-const changePasswordCheckboxes = getVariantsByFlow('change-password').filter(
-  (v) => v.type === 'checkbox',
-);
-
 const cpOptionMap: Record<string, string> = {
   'skip-current': 'no_current',
   'require-confirmation': 'with_confirmation',
 };
+
+const changePasswordCheckboxes = getVariantsByFlow('change-password').filter(
+  (v) => v.type === 'checkbox' && v.id in cpOptionMap,
+);
 
 export interface DashboardPageProps {
   user: User;
