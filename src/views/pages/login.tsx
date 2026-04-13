@@ -1,6 +1,13 @@
 import type { FC } from 'hono/jsx';
-import { getVariantById, getVariantsByGroup } from '../../config/variants';
-import { Alert, AuthCard, ComboButton, FormGroup } from '../components';
+import { getVariantsByGroup } from '../../config/variants';
+import {
+  Alert,
+  AuthCard,
+  ComboButton,
+  FormGroup,
+  PasswordInput,
+  VariantCheckbox,
+} from '../components';
 import { Layout } from '../layout';
 
 const passkeyMediationVariants = getVariantsByGroup('passkey-mediation');
@@ -18,13 +25,17 @@ function passkeyOnclick(variantId: string): string {
 export interface LoginPageProps {
   error?: string;
   success?: string;
+  useFetch?: boolean;
   stayOnPage?: boolean;
+  redirectToLogin?: boolean;
 }
 
 export const LoginPage: FC<LoginPageProps> = ({
   error,
   success,
+  useFetch,
   stayOnPage,
+  redirectToLogin,
 }) => (
   <Layout title="Login">
     <AuthCard title="Login">
@@ -43,8 +54,7 @@ export const LoginPage: FC<LoginPageProps> = ({
         </FormGroup>
 
         <FormGroup label="Password" htmlFor="password">
-          <input
-            type="password"
+          <PasswordInput
             id="password"
             name="password"
             autocomplete="current-password"
@@ -65,20 +75,12 @@ export const LoginPage: FC<LoginPageProps> = ({
           </label>
         </div>
 
-        <div class="form-group">
-          <label
-            class="checkbox-label"
-            title={getVariantById('stay-on-page')?.tooltip}
-          >
-            <input
-              type="checkbox"
-              name="stay_on_page"
-              value="1"
-              checked={stayOnPage}
-            />
-            Stay on page after success
-          </label>
-        </div>
+        <VariantCheckbox variantId="use-fetch" checked={useFetch} />
+        <VariantCheckbox variantId="stay-on-page" checked={stayOnPage} />
+        <VariantCheckbox
+          variantId="redirect-to-login"
+          checked={redirectToLogin}
+        />
 
         <button type="submit" class="btn btn-primary">
           Login
@@ -111,6 +113,7 @@ export const LoginPage: FC<LoginPageProps> = ({
       </p>
     </AuthCard>
     <script src="/js/login.js" />
-    <script src="/js/stay-on-page.js" />
+    <script src="/js/password-toggle.js" />
+    <script src="/js/form-submit.js" />
   </Layout>
 );

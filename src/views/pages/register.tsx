@@ -1,17 +1,24 @@
 import type { FC } from 'hono/jsx';
-import { getVariantById } from '../../config/variants';
-import { Alert, AuthCard, FormGroup, PasswordInput } from '../components';
+import {
+  Alert,
+  AuthCard,
+  FormGroup,
+  PasswordInput,
+  VariantCheckbox,
+} from '../components';
 import { Layout } from '../layout';
 
 export interface RegisterPageProps {
   error?: string;
   success?: string;
+  useFetch?: boolean;
   stayOnPage?: boolean;
 }
 
 export const RegisterPage: FC<RegisterPageProps> = ({
   error,
   success,
+  useFetch,
   stayOnPage,
 }) => (
   <Layout title="Register">
@@ -55,20 +62,8 @@ export const RegisterPage: FC<RegisterPageProps> = ({
           />
         </FormGroup>
 
-        <div class="form-group">
-          <label
-            class="checkbox-label"
-            title={getVariantById('stay-on-page')?.tooltip}
-          >
-            <input
-              type="checkbox"
-              name="stay_on_page"
-              value="1"
-              checked={stayOnPage}
-            />
-            Stay on page after success
-          </label>
-        </div>
+        <VariantCheckbox variantId="use-fetch" checked={useFetch} />
+        <VariantCheckbox variantId="stay-on-page" checked={stayOnPage} />
 
         <button type="submit" class="btn btn-primary">
           Create Account
@@ -80,6 +75,6 @@ export const RegisterPage: FC<RegisterPageProps> = ({
       </p>
     </AuthCard>
     <script src="/js/password-toggle.js" />
-    <script src="/js/stay-on-page.js" />
+    <script src="/js/form-submit.js" />
   </Layout>
 );

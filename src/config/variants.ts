@@ -101,13 +101,33 @@ export const VARIANTS: Variant[] = [
     group: 'change-password',
   },
   {
-    id: 'stay-on-page',
-    label: 'Stay on page after success',
-    description: 'Show a success message without navigating away from the page',
+    id: 'use-fetch',
+    label: 'Use fetch',
+    description: 'Submit the form via fetch instead of a real form POST',
     tooltip:
-      'Form submits via fetch — no navigation or page reload occurs. The existing DOM is preserved and only the alert message is updated in place.',
+      'JavaScript intercepts the form submit and sends it via fetch with XMLHttpRequest header. The browser does not navigate — the DOM is preserved. Extensions typically do not detect this as a manual form submission.',
     type: 'checkbox',
     flows: ['login', 'register', 'change-password'],
+  },
+  {
+    id: 'stay-on-page',
+    label: 'Stay on page after success',
+    description:
+      'Stay on the current page after success instead of redirecting',
+    tooltip:
+      'After successful submission, the page shows a success message without navigating away. With fetch: the DOM is preserved and only the alert updates. With POST: the server re-renders the same page with a success message.',
+    type: 'checkbox',
+    flows: ['login', 'register', 'change-password'],
+  },
+  {
+    id: 'redirect-to-login',
+    label: 'Redirect to login after success',
+    description:
+      'Redirect back to the login page after successful authentication',
+    tooltip:
+      'After successful login, the server responds with a 302 redirect back to /auth/login instead of /dashboard. The login form is visible again with the user authenticated. Useful for testing extension behavior when a cached dialog exists and the form is still active.',
+    type: 'checkbox',
+    flows: ['login'],
   },
 ];
 
