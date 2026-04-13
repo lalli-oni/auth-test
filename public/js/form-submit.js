@@ -16,12 +16,6 @@
 
   form.addEventListener('submit', async (e) => {
     const useFetch = form.querySelector('input[name="use_fetch"]')?.checked;
-    const stayOnPage = form.querySelector(
-      'input[name="stay_on_page"]',
-    )?.checked;
-    const redirectToLogin = form.querySelector(
-      'input[name="redirect_to_login"]',
-    )?.checked;
 
     // Only intercept if using fetch; real POST submits go through normally
     if (!useFetch) return;
@@ -62,16 +56,6 @@
       if (data.error) {
         showAlert(container, 'error', data.error);
       } else if (data.success) {
-        // If not staying on page, navigate to the appropriate destination
-        if (!stayOnPage) {
-          if (redirectToLogin) {
-            window.location.href = '/auth/login?redirected=true';
-          } else {
-            window.location.href = '/dashboard';
-          }
-          return;
-        }
-        // Stay on page: show inline message
         showAlert(container, 'success', data.success);
       } else {
         console.warn('Unexpected response format:', data);
