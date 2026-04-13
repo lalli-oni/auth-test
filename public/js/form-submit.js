@@ -1,4 +1,16 @@
 (() => {
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function showAlert(container, type, message) {
+    if (container) {
+      container.innerHTML = `<div class="alert alert-${type}">${escapeHtml(message)}</div>`;
+    }
+  }
+
   const form = document.querySelector('form[method="post"]');
   if (!form) return;
 
@@ -19,6 +31,8 @@
     const btn = form.querySelector('button[type="submit"]');
     if (btn) btn.disabled = true;
 
+    const container = document.getElementById('alert-container');
+
     try {
       const res = await fetch(form.action, {
         method: 'POST',
@@ -26,13 +40,27 @@
         body: new FormData(form),
       });
 
+      if (!res.ok) {
+        let errorMsg = `Server error (${res.status})`;
+        try {
+          const errData = await res.json();
+          if (errData.error) errorMsg = errData.error;
+        } catch {
+          // Response was not JSON — keep status-based message
+        }
+        showAlert(container, 'error', errorMsg);
+        return;
+      }
+
       const data = await res.json();
-      const container = document.getElementById('alert-container');
+
+      if (data.redirect) {
+        window.location.href = data.redirect;
+        return;
+      }
 
       if (data.error) {
-        if (container) {
-          container.innerHTML = `<div class="alert alert-error">${escapeHtml(data.error)}</div>`;
-        }
+        showAlert(container, 'error', data.error);
       } else if (data.success) {
         // If not staying on page, navigate to the appropriate destination
         if (!stayOnPage) {
@@ -44,24 +72,16 @@
           return;
         }
         // Stay on page: show inline message
-        if (container) {
-          container.innerHTML = `<div class="alert alert-success">${escapeHtml(data.success)}</div>`;
-        }
+        showAlert(container, 'success', data.success);
+      } else {
+        console.warn('Unexpected response format:', data);
+        showAlert(container, 'error', 'Unexpected response from server');
       }
-    } catch {
-      const container = document.getElementById('alert-container');
-      if (container) {
-        container.innerHTML =
-          '<div class="alert alert-error">Request failed</div>';
-      }
+    } catch (err) {
+      console.error('Form submission failed:', err);
+      showAlert(container, 'error', 'Request failed');
     } finally {
       if (btn) btn.disabled = false;
     }
   });
 })();
-
-function escapeHtml(str) {
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
-}
