@@ -1,7 +1,12 @@
 import type { FC } from 'hono/jsx';
-import { getVariantById } from '../../config/variants';
 import type { User } from '../../services/user.service';
-import { Alert, AuthCard, FormGroup, PasswordInput } from '../components';
+import {
+  Alert,
+  AuthCard,
+  FormGroup,
+  PasswordInput,
+  VariantCheckbox,
+} from '../components';
 import { Layout } from '../layout';
 
 export interface ChangePasswordOptions {
@@ -12,6 +17,7 @@ export interface ChangePasswordOptions {
 export interface ChangePasswordPageProps {
   user: User;
   options?: ChangePasswordOptions;
+  useFetch?: boolean;
   stayOnPage?: boolean;
   error?: string;
   success?: string;
@@ -20,6 +26,7 @@ export interface ChangePasswordPageProps {
 export const ChangePasswordPage: FC<ChangePasswordPageProps> = ({
   user,
   options,
+  useFetch,
   stayOnPage,
   error,
   success,
@@ -81,20 +88,8 @@ export const ChangePasswordPage: FC<ChangePasswordPageProps> = ({
           </FormGroup>
         )}
 
-        <div class="form-group">
-          <label
-            class="checkbox-label"
-            title={getVariantById('stay-on-page')?.tooltip}
-          >
-            <input
-              type="checkbox"
-              name="stay_on_page"
-              value="1"
-              checked={stayOnPage}
-            />
-            Stay on page after success
-          </label>
-        </div>
+        <VariantCheckbox variantId="use-fetch" checked={useFetch} />
+        <VariantCheckbox variantId="stay-on-page" checked={stayOnPage} />
 
         <button type="submit" class="btn btn-primary">
           Change Password
@@ -107,6 +102,6 @@ export const ChangePasswordPage: FC<ChangePasswordPageProps> = ({
     </AuthCard>
 
     <script src="/js/password-toggle.js" />
-    <script src="/js/stay-on-page.js" />
+    <script src="/js/form-submit.js" />
   </Layout>
 );
