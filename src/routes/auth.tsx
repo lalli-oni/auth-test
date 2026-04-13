@@ -91,6 +91,7 @@ auth.post('/login', async (c) => {
   logAuthEvent('login_success', user.id);
 
   if (wants2fa && hasMfa) {
+    if (ajax) return c.json({ redirect: '/mfa/verify' });
     return c.redirect('/mfa/verify');
   }
 
