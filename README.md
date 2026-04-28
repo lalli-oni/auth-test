@@ -55,7 +55,7 @@ Testing tools that interact with authentication flows — password managers, bro
 | &nbsp;&nbsp;↳ Password | Implemented | ✓ | Optional (TOTP or email code) | — | MFA checkbox on form; bypassed if unchecked |
 | &nbsp;&nbsp;↳ Passkey | Implemented | — | — | ✓ | Multiple mediation modes (conditional, optional, required, silent) |
 | &nbsp;&nbsp;↳ Passkey (dedicated page) | Implemented | — | — | ✓ | `/passkey-conditional` — auto-triggers conditional mediation on load |
-| &nbsp;&nbsp;↳ Identifier-first → password | Not implemented | ✓ | Optional | — | Username on step 1, password on step 2 |
+| &nbsp;&nbsp;↳ Identifier-first → password | Implemented | ✓ | Optional | — | `/login/multi-step` — username on step 1, password on step 2 |
 | &nbsp;&nbsp;↳ Identifier-first → passkey | Not implemented | — | — | ✓ | Username on step 1, passkey prompt on step 2 |
 | &nbsp;&nbsp;↳ Identifier-first → code | Not implemented | — | TOTP or email code | — | Username on step 1, code entry on step 2 |
 | **Registration / Onboarding** | | | | | |
@@ -134,6 +134,42 @@ Email MFA does not send real emails. Codes are stored in the database and readab
 | Method | Path | Description |
 |--------|------|-------------|
 | `POST` | `/admin/reset` | Drop and recreate all tables — clean slate |
+
+## Using the Admin API for automated testing
+
+The admin API is designed to be the **test harness** for e2e tests — both for this app's own smoke tests and for external projects (e.g., browser extension test suites) that use auth-test-app as a test target.
+
+### Why use the API instead of the UI for test setup
+
+Seeding users, enabling MFA, and cleaning up via the admin panel UI is slow and brittle — it adds page loads, DOM waits, and couples test setup to the UI under test. The admin API lets tests set up state in milliseconds via HTTP calls, so the actual test can focus on the flow being verified.
+
+### Side effects to be aware of
+
+Admin API calls modify the same database the web app reads. This means API actions can affect an active browser session in ways that may or may not be desirable:
+
+| Action | Web app impact |
+|--------|---------------|
+| `DELETE /admin/sessions` | Logs out every active browser session — existing cookies become invalid |
+| `DELETE /admin/users/:id` | Any browser session for that user becomes orphaned (session cookie exists but user is gone) |
+| `POST /admin/reset` | Wipes everything — all sessions, users, credentials gone mid-test |
+| `POST /admin/users/:id/reset-password` | Existing sessions stay valid, but next login requires the new password |
+| `PATCH /admin/users/:id` (toggle MFA) | Enabling MFA mid-session won't retroactively require verification for the current session |
+| `DELETE /admin/users/:id/totp` | Disables TOTP, but an in-flight MFA verify page won't know until form submit |
+
+### Guidelines for test design
+
+- **Isolate per test.** Create a unique user per test (e.g., `test_${Date.now()}`). Delete it in teardown. Avoid shared users across parallel tests.
+- **Don't reset the database mid-suite.** `POST /admin/reset` is for between full runs, not between individual tests. Prefer per-user cleanup.
+- **Be deliberate about session state.** If a test logs in via the browser, then calls `DELETE /admin/sessions`, the browser still holds the cookie — the next page load will see an invalid session. This is useful for testing session expiry UX, but surprising if unintentional.
+- **Prefer API setup, browser verification.** Create users and enable MFA via API, then verify the web flows in the browser. This keeps tests fast and focused.
+
+### E2E test infrastructure
+
+This repo includes an exportable Playwright test library in `e2e/` with selectors, page objects, and admin API fixtures. See [`e2e/README.md`](e2e/README.md) for details.
+
+```bash
+bun run test:e2e   # run all specs (auto-starts dev server if needed)
+```
 
 ## Similar projects
 
