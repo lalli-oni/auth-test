@@ -827,6 +827,29 @@ body {
   border-radius: 0 0 0.375rem 0.375rem;
 }
 
+/* Multi-step Login */
+
+#identity-display {
+  font-weight: 600;
+  padding: 0.5rem 0;
+  color: var(--text-color);
+}
+
+#back-btn {
+  display: block;
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0;
+  margin-top: 0.75rem;
+}
+
+#back-btn:hover {
+  text-decoration: underline;
+}
+
 /* Variant Picker */
 .variant-picker {
   display: flex;

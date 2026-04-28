@@ -8,6 +8,7 @@ import dashboardRoutes from './routes/dashboard';
 import mfaRoutes from './routes/mfa';
 import webauthnRoutes from './routes/webauthn';
 import { Layout } from './views/layout';
+import { MultiStepLoginPage } from './views/pages/multi-step-login';
 import { PasskeyPage } from './views/pages/passkey';
 
 const app = new Hono();
@@ -50,9 +51,21 @@ app.get('/', (c) => {
         </ul>
         <p>Use this app to test password managers and browser extensions.</p>
         <div class="hero-actions">
-          <a href="/login" class="btn btn-primary">
-            Login
-          </a>
+          <div class="combo-btn">
+            <a href="/login" class="btn btn-primary combo-btn-main">
+              Login
+            </a>
+            <button
+              type="button"
+              class="btn btn-primary combo-btn-toggle"
+              onclick="this.parentElement.classList.toggle('open')"
+            >
+              &#9662;
+            </button>
+            <div class="combo-btn-dropdown">
+              <a href="/login/multi-step">Multi-step login</a>
+            </div>
+          </div>
           <a href="/register" class="btn btn-secondary">
             Register
           </a>
@@ -70,6 +83,9 @@ app.get('/register', (c) => c.redirect('/auth/register'));
 app.get('/passkey-conditional', (c) =>
   c.html(<PasskeyPage mediation="conditional" />),
 );
+
+// Multi-step login page (identifier-first flow)
+app.get('/login/multi-step', (c) => c.html(<MultiStepLoginPage />));
 
 // Start server
 const port = 3000;
