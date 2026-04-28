@@ -82,7 +82,7 @@ Test files using layers 1-3. Currently scaffolded with test titles and TODOs.
 
 ## Admin API and test isolation
 
-The admin API modifies the same database the web app reads. API calls during a test can affect the browser session in unexpected ways (e.g., deleting sessions invalidates cookies, deleting users orphans sessions). See the main [`README.md`](../README.md#using-the-admin-api-for-automated-testing) for a full side-effects table and test design guidelines.
+The admin API modifies the same database the web app reads. API calls during a test can affect the browser session in unexpected ways (e.g., deleting sessions invalidates cookies, deleting users orphans sessions). See [`API.md`](../API.md#side-effects-to-be-aware-of) for a full side-effects table and test design guidelines.
 
 Key rules:
 - Create a unique user per test, clean up in teardown (the `testUser` fixture does this automatically)
