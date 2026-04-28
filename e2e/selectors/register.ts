@@ -12,7 +12,7 @@ export const REGISTER = {
   STAY_ON_PAGE: 'input[name="stay_on_page"]',
 
   // Buttons
-  SUBMIT_BTN: 'button[type="submit"]',
+  SUBMIT_BTN: 'form[action="/auth/register"] button[type="submit"]',
 
   // Navigation
   LOGIN_LINK: 'a[href="/login"]',

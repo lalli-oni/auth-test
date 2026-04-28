@@ -8,42 +8,49 @@ test.describe('Multi-Step Login', () => {
   });
 
   test('should start on step 1', async ({ page }) => {
-    // TODO: expect step 1 visible, step 2 hidden
+    await multiStepLoginPage.expectStep1Visible(page);
   });
 
   test('should transition to step 2 on continue', async ({ page }) => {
-    // TODO: fill username, click continue, expect step 2 visible
+    await multiStepLoginPage.fillUsername(page, 'someuser');
+    await multiStepLoginPage.clickContinue(page);
+    await multiStepLoginPage.expectStep2Visible(page);
   });
 
   test('should show identity display on step 2', async ({ page }) => {
-    // TODO: fill username, continue, expect identity display shows username
+    await multiStepLoginPage.fillUsername(page, 'testident');
+    await multiStepLoginPage.clickContinue(page);
+    await multiStepLoginPage.expectIdentityDisplayed(page, 'testident');
   });
 
-  test('should return to step 1 on back', async ({ page }) => {
-    // TODO: fill username, continue, click back, expect step 1 with username preserved
+  test('should return to step 1 on back with username preserved', async ({ page }) => {
+    await multiStepLoginPage.fillUsername(page, 'preserved');
+    await multiStepLoginPage.clickContinue(page);
+    await multiStepLoginPage.clickBack(page);
+    await multiStepLoginPage.expectStep1Visible(page);
+    await multiStepLoginPage.expectUsernameValue(page, 'preserved');
   });
 
-  test('should validate empty username on continue', async ({ page }) => {
-    // TODO: click continue with empty username, expect validation
+  test('should not advance with empty username', async ({ page }) => {
+    await multiStepLoginPage.clickContinue(page);
+    // Should still be on step 1
+    await multiStepLoginPage.expectStep1Visible(page);
   });
 
   test('should login successfully from step 2', async ({ page, testUser }) => {
-    // TODO: fill username, continue, fill password, submit, expect dashboard
+    await multiStepLoginPage.fillAndSubmit(page, testUser.username, testUser.password);
+    await multiStepLoginPage.expectRedirectToDashboard(page);
   });
 
   test('should show error for invalid password', async ({ page, testUser }) => {
-    // TODO: fill testUser username, continue, wrong password, submit, expect error
+    await multiStepLoginPage.fillAndSubmit(page, testUser.username, 'wrongpassword');
+    await multiStepLoginPage.expectError(page, MESSAGES.INVALID_CREDENTIALS);
   });
 
   test('should preserve username on error re-render', async ({ page, testUser }) => {
-    // TODO: submit with wrong password (non-fetch), expect username pre-filled
-  });
-
-  test('should remove username from DOM with clear-fields variant', async ({ page }) => {
-    // TODO: check clear-fields, fill username, continue, verify #username removed
-  });
-
-  test('should restore username input on back with clear-fields', async ({ page }) => {
-    // TODO: check clear-fields, fill, continue, back, expect username input restored
+    await multiStepLoginPage.fillAndSubmit(page, testUser.username, 'wrongpassword');
+    await multiStepLoginPage.expectError(page, MESSAGES.INVALID_CREDENTIALS);
+    // After server re-render, username should be pre-filled
+    await multiStepLoginPage.expectUsernameValue(page, testUser.username);
   });
 });

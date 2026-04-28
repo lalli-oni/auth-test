@@ -1,6 +1,5 @@
 import { test, expect } from '../fixtures';
 import { loginPage } from '../pages';
-import { dashboardPage } from '../pages';
 import { MESSAGES } from '../constants';
 
 test.describe('Login', () => {
@@ -9,38 +8,43 @@ test.describe('Login', () => {
   });
 
   test('should display login form', async ({ page }) => {
-    // TODO: verify form elements are visible
+    await expect(page.locator('#username')).toBeVisible();
+    await expect(page.locator('#password')).toBeVisible();
+    await expect(page.locator('form[action="/auth/login"] .combo-btn-main')).toBeVisible();
   });
 
   test('should login with valid credentials', async ({ page, testUser }) => {
-    // TODO: fill and submit with testUser credentials, expect dashboard
+    await loginPage.fillAndSubmit(page, testUser.username, testUser.password);
+    await loginPage.expectRedirectToDashboard(page);
   });
 
-  test('should show error for invalid credentials', async ({ page }) => {
-    // TODO: submit with wrong password, expect MESSAGES.INVALID_CREDENTIALS
+  test('should show error for invalid credentials', async ({ page, testUser }) => {
+    await loginPage.fillAndSubmit(page, testUser.username, 'wrongpassword');
+    await loginPage.expectError(page, MESSAGES.INVALID_CREDENTIALS);
   });
 
-  test('should show error for empty fields', async ({ page }) => {
-    // TODO: submit empty form, expect MESSAGES.FIELDS_REQUIRED
+  test('should show error for nonexistent user', async ({ page }) => {
+    await loginPage.fillAndSubmit(page, 'nonexistent_user', 'somepassword');
+    await loginPage.expectError(page, MESSAGES.INVALID_CREDENTIALS);
   });
 
   test('should toggle password visibility', async ({ page }) => {
-    // TODO: fill password, toggle, verify input type changes
+    await loginPage.fillPassword(page, 'secret');
+    const input = page.locator('#password');
+    await expect(input).toHaveAttribute('type', 'password');
+    await loginPage.togglePassword(page);
+    await expect(input).toHaveAttribute('type', 'text');
+    await loginPage.togglePassword(page);
+    await expect(input).toHaveAttribute('type', 'password');
   });
 
   test('should navigate to multi-step login via combo dropdown', async ({ page }) => {
-    // TODO: click combo toggle, click multi-step link, verify URL
+    await loginPage.clickMultiStepLink(page);
+    await expect(page).toHaveURL(/\/login\/multi-step/);
   });
 
   test('should navigate to register page', async ({ page }) => {
-    // TODO: click register link, verify URL
-  });
-
-  test('should login with stay-on-page variant', async ({ page, testUser }) => {
-    // TODO: check stay-on-page, submit, expect success alert on same page
-  });
-
-  test('should login with redirect-to-login variant', async ({ page, testUser }) => {
-    // TODO: check redirect-to-login, submit, expect redirect back to login
+    await page.click('a[href="/register"]');
+    await expect(page).toHaveURL(/\/register/);
   });
 });

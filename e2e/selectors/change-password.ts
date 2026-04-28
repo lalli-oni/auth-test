@@ -16,7 +16,7 @@ export const CHANGE_PASSWORD = {
   STAY_ON_PAGE: 'input[name="stay_on_page"]',
 
   // Buttons
-  SUBMIT_BTN: 'button[type="submit"]',
+  SUBMIT_BTN: 'form[action="/auth/change-password"] button[type="submit"]',
 
   // Navigation
   BACK_LINK: 'a[href="/dashboard"]',

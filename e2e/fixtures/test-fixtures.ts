@@ -9,10 +9,11 @@ export type TestFixtures = {
 export const test = base.extend<TestFixtures>({
   testUser: async ({ request }, use) => {
     const password = TEST_DEFAULTS.PASSWORD;
+    const id = `${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
     const user = await adminApi.createUser(request, {
-      username: `test_${Date.now()}`,
+      username: `test_${id}`,
       password,
-      email: `test_${Date.now()}@example.com`,
+      email: `test_${id}@example.com`,
     });
 
     await use({ ...user, password });

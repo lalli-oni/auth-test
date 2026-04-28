@@ -1,24 +1,31 @@
 import { test, expect } from '../fixtures';
-import { loginPage } from '../pages';
-import { dashboardPage } from '../pages';
+import { loginPage, dashboardPage } from '../pages';
+
+
 
 test.describe('Dashboard', () => {
-  // NOTE: dashboard requires an authenticated session.
-  // Tests must first log in via loginPage.
+  test.beforeEach(async ({ page, testUser }) => {
+    await loginPage.goto(page);
+    await loginPage.fillAndSubmit(page, testUser.username, testUser.password);
+    await loginPage.expectRedirectToDashboard(page);
+  });
 
-  test('should display dashboard after login', async ({ page, testUser }) => {
-    // TODO: login, expect dashboard loaded, expect username displayed
+  test('should display dashboard after login', async ({ page }) => {
+    await dashboardPage.expectLoaded(page);
   });
 
   test('should show correct username', async ({ page, testUser }) => {
-    // TODO: login, verify getUsername matches testUser.username
+    const username = await dashboardPage.getUsername(page);
+    expect(username).toContain(testUser.username);
   });
 
-  test('should navigate to change password', async ({ page, testUser }) => {
-    // TODO: login, click change password link, verify URL
+  test('should navigate to change password', async ({ page }) => {
+    await dashboardPage.clickChangePassword(page);
+    await expect(page).toHaveURL(/\/change-password/);
   });
 
-  test('should logout successfully', async ({ page, testUser }) => {
-    // TODO: login, click logout, expect redirect to login
+  test('should logout successfully', async ({ page }) => {
+    await dashboardPage.logout(page);
+    await expect(page).toHaveURL(/\/login/);
   });
 });

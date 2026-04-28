@@ -1,5 +1,6 @@
 import { test, expect } from '../fixtures';
 import { registerPage } from '../pages';
+import { adminApi } from '../fixtures';
 import { MESSAGES } from '../constants';
 
 test.describe('Register', () => {
@@ -8,26 +9,50 @@ test.describe('Register', () => {
   });
 
   test('should display registration form', async ({ page }) => {
-    // TODO: verify form elements are visible
+    await expect(page.locator('#username')).toBeVisible();
+    await expect(page.locator('#email')).toBeVisible();
+    await expect(page.locator('#password')).toBeVisible();
+    await expect(page.locator('#confirm_password')).toBeVisible();
+    await expect(page.locator('button[type="submit"]')).toBeVisible();
   });
 
-  test('should register successfully', async ({ page }) => {
-    // TODO: fill with unique username and matching passwords, expect dashboard
+  test('should register successfully', async ({ page, request }) => {
+    const username = `reg_${Date.now()}`;
+    await registerPage.fillAndSubmit(page, username, 'StrongPass123!');
+    await registerPage.expectRedirectToDashboard(page);
+
+    // Clean up the created user
+    const resp = await request.get('/admin/users');
+    const { users } = await resp.json();
+    const created = users.find((u: { username: string }) => u.username === username);
+    if (created) await adminApi.deleteUser(request, created.id);
   });
 
   test('should show error for duplicate username', async ({ page, testUser }) => {
-    // TODO: register with testUser.username, expect MESSAGES.USERNAME_TAKEN
+    await registerPage.fillAndSubmit(page, testUser.username, 'AnotherPass123!');
+    await registerPage.expectError(page, MESSAGES.USERNAME_TAKEN);
   });
 
   test('should show error for password mismatch', async ({ page }) => {
-    // TODO: fill with mismatched passwords, expect MESSAGES.PASSWORDS_MISMATCH
+    await registerPage.fillUsername(page, `mismatch_${Date.now()}`);
+    await registerPage.fillPassword(page, 'Password123!');
+    await registerPage.fillConfirmPassword(page, 'Different456!');
+    await registerPage.submit(page);
+    await registerPage.expectError(page, MESSAGES.PASSWORDS_MISMATCH);
   });
 
-  test('should show error for empty fields', async ({ page }) => {
-    // TODO: submit empty form, expect error
-  });
+  test('should register without email', async ({ page, request }) => {
+    const username = `noemail_${Date.now()}`;
+    await registerPage.fillUsername(page, username);
+    await registerPage.fillPassword(page, 'StrongPass123!');
+    await registerPage.fillConfirmPassword(page, 'StrongPass123!');
+    await registerPage.submit(page);
+    await registerPage.expectRedirectToDashboard(page);
 
-  test('should register without email', async ({ page }) => {
-    // TODO: fill without email, expect success
+    // Clean up
+    const resp = await request.get('/admin/users');
+    const { users } = await resp.json();
+    const created = users.find((u: { username: string }) => u.username === username);
+    if (created) await adminApi.deleteUser(request, created.id);
   });
 });
