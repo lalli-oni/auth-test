@@ -6,58 +6,61 @@
   const identityDisplay = document.getElementById('identity-display');
   const form = document.querySelector('form[method="post"]');
 
-  if (!step1 || !step2 || !continueBtn || !backBtn || !form) return;
-
-  const keepInDomCheckbox = form.querySelector(
-    'input[name="keep_identity_in_dom"]',
-  );
-  const clearFieldsCheckbox = form.querySelector('input[name="clear_fields"]');
-
-  // Enforce mutual exclusivity between sub-variant checkboxes
-  if (keepInDomCheckbox && clearFieldsCheckbox) {
-    keepInDomCheckbox.addEventListener('change', () => {
-      if (keepInDomCheckbox.checked) clearFieldsCheckbox.checked = false;
+  if (
+    !step1 ||
+    !step2 ||
+    !continueBtn ||
+    !backBtn ||
+    !identityDisplay ||
+    !form
+  ) {
+    console.error('[multi-step-login] Missing required DOM elements', {
+      step1: !!step1,
+      step2: !!step2,
+      continueBtn: !!continueBtn,
+      backBtn: !!backBtn,
+      identityDisplay: !!identityDisplay,
+      form: !!form,
     });
-    clearFieldsCheckbox.addEventListener('change', () => {
-      if (clearFieldsCheckbox.checked) keepInDomCheckbox.checked = false;
-    });
+    return;
   }
 
+  const clearFieldsCheckbox = form.querySelector('input[name="clear_fields"]');
+
   let storedUsername = '';
+  let clearFieldsAtContinue = false;
 
   continueBtn.addEventListener('click', () => {
     const usernameInput = document.getElementById('username');
     if (!usernameInput) return;
 
-    const username = usernameInput.value.trim();
-    if (!username) {
-      usernameInput.focus();
+    if (!usernameInput.value.trim()) {
+      usernameInput.reportValidity();
       return;
     }
 
-    storedUsername = username;
+    storedUsername = usernameInput.value.trim();
+    clearFieldsAtContinue = !!clearFieldsCheckbox?.checked;
 
     // Transition to step 2
     step1.style.display = 'none';
     step2.style.display = '';
 
-    const clearFields = clearFieldsCheckbox?.checked;
-
-    if (clearFields) {
+    if (clearFieldsAtContinue) {
       // Remove username input from DOM, add hidden input for form submission
-      usernameInput.remove();
       identityDisplay.style.display = 'none';
+      usernameInput.remove();
 
       const hidden = document.createElement('input');
       hidden.type = 'hidden';
       hidden.name = 'username';
       hidden.id = 'username-hidden';
-      hidden.value = username;
+      hidden.value = storedUsername;
       form.appendChild(hidden);
     } else {
       // Keep username input in DOM as hidden field
       usernameInput.type = 'hidden';
-      identityDisplay.textContent = username;
+      identityDisplay.textContent = storedUsername;
       identityDisplay.style.display = '';
     }
 
@@ -68,9 +71,7 @@
     step2.style.display = 'none';
     step1.style.display = '';
 
-    const clearFields = clearFieldsCheckbox?.checked;
-
-    if (clearFields) {
+    if (clearFieldsAtContinue) {
       // Remove the hidden input we created
       const hiddenInput = document.getElementById('username-hidden');
       if (hiddenInput) hiddenInput.remove();
@@ -78,8 +79,7 @@
       // Re-create the username input in the form group
       const formGroup = step1.querySelector('.form-group');
       if (formGroup) {
-        // Check if a wrapper div exists (from FormGroup component)
-        const existingInput = formGroup.querySelector('input');
+        const existingInput = formGroup.querySelector('input[name="username"]');
         if (!existingInput) {
           const newInput = document.createElement('input');
           newInput.type = 'text';

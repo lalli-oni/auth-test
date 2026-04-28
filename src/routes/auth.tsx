@@ -53,6 +53,7 @@ auth.post('/login', async (c) => {
       return c.html(
         <MultiStepLoginPage
           error={error}
+          username={username}
           useFetch={useFetch}
           stayOnPage={stayOnPage}
           redirectToLogin={redirectToLogin}

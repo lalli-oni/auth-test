@@ -140,22 +140,12 @@ export const VARIANTS: Variant[] = [
     group: 'login-method',
   },
   {
-    id: 'keep-identity-in-dom',
-    label: 'Keep identity in DOM',
-    description:
-      'Username field stays in DOM (hidden) when password step appears',
-    tooltip:
-      'After entering the username and advancing to step 2, the username input remains in the DOM as a hidden field. Password managers and extensions can still see both fields simultaneously.',
-    type: 'checkbox',
-    flows: ['multi-step-login'],
-  },
-  {
     id: 'clear-fields',
     label: 'Clear fields',
     description:
       'Username field is removed from DOM when password step appears',
     tooltip:
-      'After entering the username and advancing to step 2, the username input is removed from the DOM entirely. Only a hidden input carries the value for form submission. Tests whether extensions can associate credentials when the identifier field is gone.',
+      'After entering the username and advancing to step 2, the username input is removed from the DOM entirely. Only a hidden input carries the value for form submission. By default the username input stays in the DOM as a hidden field.',
     type: 'checkbox',
     flows: ['multi-step-login'],
   },

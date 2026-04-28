@@ -12,6 +12,7 @@ import { Layout } from '../layout';
 export interface MultiStepLoginPageProps {
   error?: string;
   success?: string;
+  username?: string;
   useFetch?: boolean;
   stayOnPage?: boolean;
   redirectToLogin?: boolean;
@@ -20,6 +21,7 @@ export interface MultiStepLoginPageProps {
 export const MultiStepLoginPage: FC<MultiStepLoginPageProps> = ({
   error,
   success,
+  username,
   useFetch,
   stayOnPage,
   redirectToLogin,
@@ -40,6 +42,7 @@ export const MultiStepLoginPage: FC<MultiStepLoginPageProps> = ({
               autocomplete="username"
               required
               autofocus
+              value={username}
             />
           </FormGroup>
 
@@ -85,7 +88,6 @@ export const MultiStepLoginPage: FC<MultiStepLoginPageProps> = ({
           </button>
         </div>
 
-        <VariantCheckbox variantId="keep-identity-in-dom" />
         <VariantCheckbox variantId="clear-fields" />
         <VariantCheckbox variantId="use-fetch" checked={useFetch} />
         <VariantCheckbox variantId="stay-on-page" checked={stayOnPage} />
