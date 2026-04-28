@@ -129,6 +129,36 @@ export const VARIANTS: Variant[] = [
     type: 'checkbox',
     flows: ['login'],
   },
+  {
+    id: 'multi-step-login',
+    label: 'Multi-step (identifier first)',
+    description: 'Login with username first, then password on a second step',
+    tooltip:
+      'Navigates to /login/multi-step where the username and password are collected in two separate steps. Tests identifier-first login flows used by Google, Microsoft, etc.',
+    type: 'combo-option',
+    flows: ['login'],
+    group: 'login-method',
+  },
+  {
+    id: 'keep-identity-in-dom',
+    label: 'Keep identity in DOM',
+    description:
+      'Username field stays in DOM (hidden) when password step appears',
+    tooltip:
+      'After entering the username and advancing to step 2, the username input remains in the DOM as a hidden field. Password managers and extensions can still see both fields simultaneously.',
+    type: 'checkbox',
+    flows: ['multi-step-login'],
+  },
+  {
+    id: 'clear-fields',
+    label: 'Clear fields',
+    description:
+      'Username field is removed from DOM when password step appears',
+    tooltip:
+      'After entering the username and advancing to step 2, the username input is removed from the DOM entirely. Only a hidden input carries the value for form submission. Tests whether extensions can associate credentials when the identifier field is gone.',
+    type: 'checkbox',
+    flows: ['multi-step-login'],
+  },
 ];
 
 export function getVariantsByFlow(flow: string): Variant[] {

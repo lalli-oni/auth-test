@@ -16,6 +16,7 @@ import {
 import type { ChangePasswordOptions } from '../views/pages/change-password';
 import { ChangePasswordPage } from '../views/pages/change-password';
 import { LoginPage } from '../views/pages/login';
+import { MultiStepLoginPage } from '../views/pages/multi-step-login';
 import { RegisterPage } from '../views/pages/register';
 
 const auth = new Hono();
@@ -43,10 +44,21 @@ auth.post('/login', async (c) => {
   const useFetch = body.use_fetch === '1';
   const stayOnPage = body.stay_on_page === '1';
   const redirectToLogin = body.redirect_to_login === '1';
+  const source = body.source as string | undefined;
   const ajax = useFetch && isAjax(c);
 
   const renderError = (error: string) => {
     if (ajax) return c.json({ error });
+    if (source === 'multi-step') {
+      return c.html(
+        <MultiStepLoginPage
+          error={error}
+          useFetch={useFetch}
+          stayOnPage={stayOnPage}
+          redirectToLogin={redirectToLogin}
+        />,
+      );
+    }
     return c.html(
       <LoginPage
         error={error}
@@ -108,8 +120,10 @@ auth.post('/login', async (c) => {
   }
 
   if (stayOnPage) {
+    const PageComponent =
+      source === 'multi-step' ? MultiStepLoginPage : LoginPage;
     return c.html(
-      <LoginPage
+      <PageComponent
         success="Logged in successfully"
         useFetch={useFetch}
         stayOnPage={stayOnPage}

@@ -1,5 +1,5 @@
 import type { FC } from 'hono/jsx';
-import { getVariantsByGroup } from '../../config/variants';
+import { getVariantById, getVariantsByGroup } from '../../config/variants';
 import {
   Alert,
   AuthCard,
@@ -82,9 +82,26 @@ export const LoginPage: FC<LoginPageProps> = ({
           checked={redirectToLogin}
         />
 
-        <button type="submit" class="btn btn-primary">
-          Login
-        </button>
+        <div class="combo-btn">
+          <button type="submit" class="btn btn-primary combo-btn-main">
+            Login
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary combo-btn-toggle"
+            onclick="this.parentElement.classList.toggle('open')"
+          >
+            &#9662;
+          </button>
+          <div class="combo-btn-dropdown">
+            <a
+              href="/login/multi-step"
+              title={getVariantById('multi-step-login')?.tooltip}
+            >
+              Multi-step login
+            </a>
+          </div>
+        </div>
       </form>
 
       <div class="auth-divider">
