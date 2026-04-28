@@ -1,3 +1,5 @@
+const _dashboardLogger = Logger.create('Dashboard');
+
 async function showTotpSetup() {
   const modal = document.getElementById('totp-setup-modal');
   const loading = document.getElementById('totp-setup-loading');
@@ -71,10 +73,10 @@ async function deletePasskey(credentialId) {
     if (data.success) {
       window.location.reload();
     } else {
-      alert(`Failed to remove passkey: ${data.error}`);
+      _dashboardLogger.error('Failed to remove passkey:', data.error);
     }
   } catch (err) {
-    alert(`Error removing passkey: ${err.message}`);
+    _dashboardLogger.error('Error removing passkey:', err.message);
   }
 }
 

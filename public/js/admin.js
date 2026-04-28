@@ -3,6 +3,7 @@
 const AdminPanel = {
   currentUserId: null,
   totpInterval: null,
+  _logger: Logger.create('AdminPanel'),
 
   async init() {
     await this.refreshAll();
@@ -43,7 +44,7 @@ const AdminPanel = {
         )
         .join('');
     } catch (err) {
-      console.error('Failed to load users:', err);
+      this._logger.error('Failed to load users:', err);
     }
   },
 
@@ -53,10 +54,7 @@ const AdminPanel = {
       const data = await res.json();
 
       if (!data.success) {
-        console.error(
-          '[AdminPanel] Failed to load user details - Status:',
-          data.error,
-        );
+        this._logger.error('Failed to load user details:', data.error);
         return;
       }
 
@@ -188,10 +186,7 @@ const AdminPanel = {
 
       this.showModal(html);
     } catch (err) {
-      console.error(
-        '[AdminPanel] Failed to load user details - Exception:',
-        err,
-      );
+      this._logger.error('Failed to load user details:', err);
     }
   },
 
@@ -234,21 +229,15 @@ const AdminPanel = {
       if (data.success) {
         this.closeModal();
         await this.loadUsers();
-        console.log(
-          '[AdminPanel] User created successfully - Username:',
+        this._logger.info(
+          'User created successfully - Username:',
           data.user?.username || 'unknown',
         );
       } else {
-        console.error(
-          '[AdminPanel] Failed to create user - Status:',
-          data.error,
-        );
+        this._logger.error('Failed to create user:', data.error);
       }
     } catch (err) {
-      console.error(
-        '[AdminPanel] Error creating user - Exception:',
-        err.message,
-      );
+      this._logger.error('Error creating user:', err.message);
     }
   },
 
@@ -262,21 +251,12 @@ const AdminPanel = {
       if (data.success) {
         this.closeModal();
         await this.loadUsers();
-        console.log(
-          '[AdminPanel] User deleted successfully - User ID:',
-          userId,
-        );
+        this._logger.info('User deleted successfully - User ID:', userId);
       } else {
-        console.error(
-          '[AdminPanel] Failed to delete user - Status:',
-          data.error,
-        );
+        this._logger.error('Failed to delete user:', data.error);
       }
     } catch (err) {
-      console.error(
-        '[AdminPanel] Error deleting user - Exception:',
-        err.message,
-      );
+      this._logger.error('Error deleting user:', err.message);
     }
   },
 
@@ -307,22 +287,13 @@ const AdminPanel = {
       const data = await res.json();
 
       if (data.success) {
-        console.log(
-          '[AdminPanel] Password reset successfully - User ID:',
-          userId,
-        );
+        this._logger.info('Password reset successfully - User ID:', userId);
         this.showUserDetails(userId);
       } else {
-        console.error(
-          '[AdminPanel] Failed to reset password - Status:',
-          data.error,
-        );
+        this._logger.error('Failed to reset password:', data.error);
       }
     } catch (err) {
-      console.error(
-        '[AdminPanel] Error resetting password - Exception:',
-        err.message,
-      );
+      this._logger.error('Error resetting password:', err.message);
     }
   },
 
@@ -348,7 +319,7 @@ const AdminPanel = {
             data.remainingSeconds;
         }
       } catch (err) {
-        console.error('Failed to get TOTP code:', err);
+        this._logger.error('Failed to get TOTP code:', err);
       }
     };
 
@@ -364,24 +335,18 @@ const AdminPanel = {
       const data = await res.json();
 
       if (data.success) {
-        console.info(
-          '[AdminPanel] Email code generated - Code:',
+        this._logger.info(
+          'Email code generated - Code:',
           data.code.code,
           '- Expires:',
           new Date(data.code.expiresAt).toLocaleTimeString(),
         );
         this.showUserDetails(userId);
       } else {
-        console.error(
-          '[AdminPanel] Failed to generate email code - Status:',
-          data.error,
-        );
+        this._logger.error('Failed to generate email code:', data.error);
       }
     } catch (err) {
-      console.error(
-        '[AdminPanel] Error generating email code - Exception:',
-        err.message,
-      );
+      this._logger.error('Error generating email code:', err.message);
     }
   },
 
@@ -399,21 +364,15 @@ const AdminPanel = {
 
       if (data.success) {
         this.showUserDetails(userId);
-        console.log(
-          '[AdminPanel] Passkey deleted successfully - Credential ID:',
+        this._logger.info(
+          'Passkey deleted successfully - Credential ID:',
           credentialId,
         );
       } else {
-        console.error(
-          '[AdminPanel] Failed to delete passkey - Status:',
-          data.error,
-        );
+        this._logger.error('Failed to delete passkey:', data.error);
       }
     } catch (err) {
-      console.error(
-        '[AdminPanel] Error deleting passkey - Exception:',
-        err.message,
-      );
+      this._logger.error('Error deleting passkey:', err.message);
     }
   },
 
@@ -446,7 +405,7 @@ const AdminPanel = {
         )
         .join('');
     } catch (err) {
-      console.error('Failed to load sessions:', err);
+      this._logger.error('Failed to load sessions:', err);
     }
   },
 
@@ -462,21 +421,15 @@ const AdminPanel = {
         if (this.currentUserId) {
           this.showUserDetails(this.currentUserId);
         }
-        console.log(
-          '[AdminPanel] Session deleted successfully - Session ID:',
+        this._logger.info(
+          'Session deleted successfully - Session ID:',
           sessionId,
         );
       } else {
-        console.error(
-          '[AdminPanel] Failed to delete session - Status:',
-          data.error,
-        );
+        this._logger.error('Failed to delete session:', data.error);
       }
     } catch (err) {
-      console.error(
-        '[AdminPanel] Error deleting session - Exception:',
-        err.message,
-      );
+      this._logger.error('Error deleting session:', err.message);
     }
   },
 
@@ -493,22 +446,16 @@ const AdminPanel = {
       const data = await res.json();
 
       if (data.success) {
-        console.log(
-          '[AdminPanel] All sessions deleted successfully - Count:',
+        this._logger.info(
+          'All sessions deleted successfully - Count:',
           data.deletedCount,
         );
         await this.loadSessions();
       } else {
-        console.error(
-          '[AdminPanel] Failed to kill sessions - Status:',
-          data.error,
-        );
+        this._logger.error('Failed to kill sessions:', data.error);
       }
     } catch (err) {
-      console.error(
-        '[AdminPanel] Error killing sessions - Exception:',
-        err.message,
-      );
+      this._logger.error('Error killing sessions:', err.message);
     }
   },
 
@@ -527,21 +474,13 @@ const AdminPanel = {
       const data = await res.json();
 
       if (data.success) {
-        console.log(
-          '[AdminPanel] Database reset successfully - reloading page',
-        );
+        this._logger.info('Database reset successfully - reloading page');
         window.location.reload();
       } else {
-        console.error(
-          '[AdminPanel] Failed to reset database - Status:',
-          data.error,
-        );
+        this._logger.error('Failed to reset database:', data.error);
       }
     } catch (err) {
-      console.error(
-        '[AdminPanel] Error resetting database - Exception:',
-        err.message,
-      );
+      this._logger.error('Error resetting database:', err.message);
     }
   },
 
@@ -555,7 +494,7 @@ const AdminPanel = {
         button.textContent = original;
       }, 1500);
     } catch (err) {
-      console.error('[AdminPanel] Failed to copy to clipboard:', err);
+      this._logger.error('Failed to copy to clipboard:', err);
     }
   },
 
