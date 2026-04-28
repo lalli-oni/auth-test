@@ -7,13 +7,17 @@ export interface CreateUserPayload {
   email?: string;
 }
 
-export interface AdminUser {
+export interface AdminUserCreated {
   id: number;
   username: string;
   email: string | null;
-  totp_enabled: boolean;
-  email_mfa_enabled: boolean;
-  created_at: string;
+  createdAt: string;
+}
+
+export interface AdminUser extends AdminUserCreated {
+  totpEnabled: boolean;
+  emailMfaEnabled: boolean;
+  passwordPlaintext: string | null;
 }
 
 export interface TotpCodeResult {
@@ -35,7 +39,7 @@ async function assertOk(response: { ok(): boolean; status(): number; text(): Pro
 }
 
 export const adminApi = {
-  async createUser(request: APIRequestContext, payload: CreateUserPayload): Promise<AdminUser> {
+  async createUser(request: APIRequestContext, payload: CreateUserPayload): Promise<AdminUserCreated> {
     const response = await request.post(ADMIN_ROUTES.USERS, { data: payload });
     await assertOk(response, 'createUser');
     const json = await response.json();
@@ -65,7 +69,7 @@ export const adminApi = {
     const response = await request.get(ADMIN_ROUTES.TOTP_CURRENT(userId));
     await assertOk(response, 'getTotpCode');
     const json = await response.json();
-    return json;
+    return { code: json.code, remainingSeconds: json.remainingSeconds, totpEnabled: json.totpEnabled };
   },
 
   async generateEmailCode(request: APIRequestContext, userId: number): Promise<EmailCodeResult> {

@@ -1,5 +1,6 @@
 import { test, expect } from '../fixtures';
 import { loginPage } from '../pages';
+import { LOGIN } from '../selectors/login';
 import { MESSAGES } from '../constants';
 
 test.describe('Login', () => {
@@ -8,9 +9,9 @@ test.describe('Login', () => {
   });
 
   test('should display login form', async ({ page }) => {
-    await expect(page.locator('#username')).toBeVisible();
-    await expect(page.locator('#password')).toBeVisible();
-    await expect(page.locator('form[action="/auth/login"] .combo-btn-main')).toBeVisible();
+    await expect(page.locator(LOGIN.USERNAME)).toBeVisible();
+    await expect(page.locator(LOGIN.PASSWORD)).toBeVisible();
+    await expect(page.locator(LOGIN.LOGIN_BTN).first()).toBeVisible();
   });
 
   test('should login with valid credentials', async ({ page, testUser }) => {
@@ -30,7 +31,7 @@ test.describe('Login', () => {
 
   test('should toggle password visibility', async ({ page }) => {
     await loginPage.fillPassword(page, 'secret');
-    const input = page.locator('#password');
+    const input = page.locator(LOGIN.PASSWORD);
     await expect(input).toHaveAttribute('type', 'password');
     await loginPage.togglePassword(page);
     await expect(input).toHaveAttribute('type', 'text');
@@ -44,7 +45,7 @@ test.describe('Login', () => {
   });
 
   test('should navigate to register page', async ({ page }) => {
-    await page.click('a[href="/register"]');
+    await page.click(LOGIN.REGISTER_LINK);
     await expect(page).toHaveURL(/\/register/);
   });
 });

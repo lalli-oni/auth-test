@@ -1,9 +1,9 @@
 import { test as base } from '@playwright/test';
-import { adminApi, type AdminUser } from './admin-api';
+import { adminApi, type AdminUserCreated } from './admin-api';
 import { TEST_DEFAULTS } from '../constants';
 
 export type TestFixtures = {
-  testUser: AdminUser & { password: string };
+  testUser: AdminUserCreated & { password: string };
 };
 
 export const test = base.extend<TestFixtures>({
@@ -20,8 +20,8 @@ export const test = base.extend<TestFixtures>({
 
     try {
       await adminApi.deleteUser(request, user.id);
-    } catch {
-      // ignore cleanup errors
+    } catch (error) {
+      console.warn(`[testUser cleanup] Failed to delete user ${user.id} (${user.username}):`, error);
     }
   },
 });

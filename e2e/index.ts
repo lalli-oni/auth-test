@@ -25,5 +25,5 @@ export { test, expect } from './fixtures/test-fixtures';
 export { ROUTES, ADMIN_ROUTES, MESSAGES, TEST_DEFAULTS } from './constants';
 
 // Types
-export type { CreateUserPayload, AdminUser, TotpCodeResult, EmailCodeResult } from './fixtures/admin-api';
+export type { CreateUserPayload, AdminUserCreated, AdminUser, TotpCodeResult, EmailCodeResult } from './fixtures/admin-api';
 export type { TestFixtures } from './fixtures/test-fixtures';

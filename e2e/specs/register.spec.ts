@@ -1,7 +1,23 @@
 import { test, expect } from '../fixtures';
 import { registerPage } from '../pages';
+import { REGISTER } from '../selectors/register';
 import { adminApi } from '../fixtures';
 import { MESSAGES } from '../constants';
+
+async function cleanupRegisteredUser(request: Parameters<typeof adminApi.deleteUser>[0], username: string) {
+  try {
+    const resp = await request.get('/admin/users');
+    const { users } = await resp.json();
+    const created = users.find((u: { username: string }) => u.username === username);
+    if (created) {
+      await adminApi.deleteUser(request, created.id);
+    } else {
+      console.warn(`[register cleanup] Could not find user "${username}" for cleanup`);
+    }
+  } catch (error) {
+    console.warn(`[register cleanup] Failed to clean up user "${username}":`, error);
+  }
+}
 
 test.describe('Register', () => {
   test.beforeEach(async ({ page }) => {
@@ -9,23 +25,18 @@ test.describe('Register', () => {
   });
 
   test('should display registration form', async ({ page }) => {
-    await expect(page.locator('#username')).toBeVisible();
-    await expect(page.locator('#email')).toBeVisible();
-    await expect(page.locator('#password')).toBeVisible();
-    await expect(page.locator('#confirm_password')).toBeVisible();
-    await expect(page.locator('button[type="submit"]')).toBeVisible();
+    await expect(page.locator(REGISTER.USERNAME)).toBeVisible();
+    await expect(page.locator(REGISTER.EMAIL)).toBeVisible();
+    await expect(page.locator(REGISTER.PASSWORD)).toBeVisible();
+    await expect(page.locator(REGISTER.CONFIRM_PASSWORD)).toBeVisible();
+    await expect(page.locator(REGISTER.SUBMIT_BTN)).toBeVisible();
   });
 
   test('should register successfully', async ({ page, request }) => {
     const username = `reg_${Date.now()}`;
     await registerPage.fillAndSubmit(page, username, 'StrongPass123!');
     await registerPage.expectRedirectToDashboard(page);
-
-    // Clean up the created user
-    const resp = await request.get('/admin/users');
-    const { users } = await resp.json();
-    const created = users.find((u: { username: string }) => u.username === username);
-    if (created) await adminApi.deleteUser(request, created.id);
+    await cleanupRegisteredUser(request, username);
   });
 
   test('should show error for duplicate username', async ({ page, testUser }) => {
@@ -48,11 +59,6 @@ test.describe('Register', () => {
     await registerPage.fillConfirmPassword(page, 'StrongPass123!');
     await registerPage.submit(page);
     await registerPage.expectRedirectToDashboard(page);
-
-    // Clean up
-    const resp = await request.get('/admin/users');
-    const { users } = await resp.json();
-    const created = users.find((u: { username: string }) => u.username === username);
-    if (created) await adminApi.deleteUser(request, created.id);
+    await cleanupRegisteredUser(request, username);
   });
 });
